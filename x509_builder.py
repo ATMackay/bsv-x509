@@ -1,26 +1,34 @@
 # This programme contaisn a class of functions generates an X.512 certificate 
+import time
+import sys
 import numpy as np
 import hashlib
 import random
-import time
-import sys
 import libsecp256k1
 
 
 def gen_device_id(person_name, device_type):
-    if type(person_name)!= str or sys.getsizeof(person_name) > 16:
+    if type(person_name)!= str or sys.getsizeof(person_name) > 16*8:
         raise Exception("Name must be a string under 16 bytes in length!")  
-    if type(device_type)!= str or sys.getsizeof(device_type) > 8:
+    if type(device_type)!= str or sys.getsizeof(device_type) > 8*8:
         raise Exception("Name must be a string under 8 bytes in length!")  
     person_name = person_name.zfill(16)
     device_type = device_type.zfill(8)
-    return hashlib.sha256(person_name + device_type).digest()
+    preimg = person_name + device_type
+    return hashlib.sha256(preimg.encode()).digest()
 
 def user_id(person_name, company):
-    return hashlib.sha256(person_name + company).digest()
+    if type(person_name)!= str or sys.getsizeof(person_name) > 16*8:
+        raise Exception("Name must be a string under 16 bytes in length!")  
+    if type(company)!= str or sys.getsizeof(company) > 32*8:
+        raise Exception("Name must be a string under 8 bytes in length!") 
+    person_name = person_name.zfill(16)
+    company = company.zfill(32)
+    preimg = person_name + company
+    return hashlib.sha256(preimg.encode()).digest()
 
 # Certificate class
-class cert_x509(object, ): 
+class cert_x509(object): 
     """This class generates X.509 fields"""
     # 4-byte version number
     version = 3
@@ -76,8 +84,6 @@ class cert_x509(object, ):
     def decode():
         # Input formatted Base64 or Hex encoded certificate
         return 0
-
-
 
 
 # Test
