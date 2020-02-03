@@ -193,7 +193,6 @@ class libsecp(object):
         pubkey_x = hex(pubkey[0])
         pubkey_y = hex(pubkey[1])       
         result  = '0x04' + str(pubkey_x[2:]).zfill(64) + str(pubkey_y[2:]).zfill(64)
-        print(len(result))
         return result
 
     def compress_key(self, pub_key):
@@ -231,11 +230,11 @@ class libsecp(object):
         rhs = (pow(pub_key_x,3) + secp_a*pub_key_x + secp_b) % secp_p    
         y_sol1 = intmath().sqrtmod(rhs, secp_p) 
         y_sol2 = (secp_p - y_sol1)
-        print("pubkey x-coordinate:", pub_key_x) 
-        print("x^3 + 7=", rhs) 
-        print("y_1 =", y_sol1)
-        print("y_2 =", y_sol2)
-        print("(y_1)^2 =", pow(y_sol1, 2, secp_p))
+        #print("pubkey x-coordinate:", pub_key_x) 
+        #print("x^3 + 7=", rhs) 
+        #print("y_1 =", y_sol1)
+        #print("y_2 =", y_sol2)
+        #print("(y_1)^2 =", pow(y_sol1, 2, secp_p))
         if pow(y_sol1, 2, secp_p) == rhs and pow(y_sol2, 2, secp_p) == rhs:
             if comp_pub_key[0:4] == '0x02':
                 hex_y_neg = hex(min(y_sol1, y_sol2))
