@@ -34,8 +34,6 @@ def bin_array(integer):
         raise Exception("input must be a positive integer!")
     return [int(x) for x in bin(integer)[2:]]
 
-
-
 class base_58(object):		
     def encode(self, num):
 	    """ Returns num in a base64-encoded string"""
@@ -135,13 +133,13 @@ class intmath(object):
 
     def sqrtmod(self, a, p):
         """ Find a quadratic residue (mod p) of 'a'. p
-            must be an odd prime.
+            must be an odd prime and p must be equivalent to 3 mod 4.
 
             Solve the congruence of the form:
                 x^2 = a (mod p)
             And returns x. Note that p - x is also a root.
 
-            0 is returned is no square root exists for
+            0 is returned if no square root exists for
             these a and p.
 
             The Tonelli-Shanks algorithm is used (except
@@ -152,54 +150,18 @@ class intmath(object):
         """
         # Simple cases
         #
-        if intmath().legendre_symbol(a, p) != 1:
-            return 0
+        if p % 4 == 3:
+            power = (p+1) // 4
+            return pow(a, power , p)
         elif a == 0:
             return 0
         elif p == 2:
             return 0
-        elif p % 4 == 3:
-            return pow(a, (p + 1) // 4, p)
-
-        # Partition p-1 to s * 2^e for an odd s (i.e.
-        # reduce all the powers of 2 from p-1)
-        #
-        s = p - 1
-        e = 0
-        while s % 2 == 0:
-            s /= 2
-            e += 1
-
-        # Find some 'n' with a legendre symbol n|p = -1.
-        # Shouldn't take long.
-        #
-        n = 2
-        while intmath().legendre_symbol(n, p) != -1:
-            n += 1
-
-        x = pow(a, (s + 1) // 2, p)
-        b = pow(a, s, p)
-        g = pow(n, s, p)
-        r = e
-
-        while True:
-            t = b
-            m = 0
-            for m in xrange(r):
-                if t == 1:
-                    break
-                t = pow(t, 2, p)
-
-            if m == 0:
-                return x
-
-            gs = pow(g, 2 ** (r - m - 1), p)
-            g = (gs * gs) % p
-            x = (x * gs) % p
-            b = (b * g) % p
-            r = m
-
-
+        elif intmath().legendre_symbol(a, p) != 1:
+            return 0
+        else:
+            raise Exception("exponent must be 0, 1, 2 or prime and equivalent to 3 mod 4")
+ 
     def legendre_symbol(self, a, p):
         """ Compute the Legendre symbol a|p using
             Euler's criterion. p is a prime, a is
@@ -209,12 +171,11 @@ class intmath(object):
             Returns 1 if a has a square root modulo
             p, -1 otherwise.
         """
-        ls = pow(a, (p - 1) // 2, p)
+        ls = pow(a, int((p - 1) / 2), p)
         return -1 if ls == p - 1 else ls
 
 # secp256k1
 class libsecp(object):
-
 
     def private_key(self):
         return random.randint(1,secp_n)
@@ -229,9 +190,9 @@ class libsecp(object):
             raise Exception("input must be valid (x,y) coordinate.")
         if pubkey[0] > secp_p or pubkey[0] < 0 or pubkey[1] > secp_p or pubkey[1] < 0:
             raise Exception("input must be valid secp256k1 element.") 
-        pubkey_x = hex(pubkey[0]).zfill(64)
-        pubkey_y = hex(pubkey[1]).zfill(64)        
-        result  = '0x04' + str(pubkey_x[2:])+ str(pubkey_y[2:])
+        pubkey_x = hex(pubkey[0])
+        pubkey_y = hex(pubkey[1])       
+        result  = '0x04' + str(pubkey_x[2:]).zfill(64) + str(pubkey_y[2:]).zfill(64)
         print(len(result))
         return result
 
@@ -248,7 +209,6 @@ class libsecp(object):
             pub_key_y = pub_key[1]
         else:
             raise Exception("incorrect public key formatting.")
-    
         if pub_key_x > secp_p or pub_key_x < 0 or pub_key_y > secp_p or pub_key_y < 0:
             raise Exception("public key values outside the accepted range!")  
         if pub_key_y < secp_p // 2:
@@ -262,22 +222,29 @@ class libsecp(object):
 
     def decompress_key(self, comp_pub_key):
         """Calculate the modular square root of x^3 + 7"""
-        if len(comp_pub_key) > 68:
-            raise Exception("public key must be an array of length 2!")
+        if len(comp_pub_key) != 68:
+            raise Exception("public key must be a 32 byte string")
         if comp_pub_key[0:4]!='0x02' and comp_pub_key[0:4]!='0x03':
             raise Exception("Compressed key not formatted correctly!")
         # Convert back to integer
         pub_key_x = int(comp_pub_key[4:], 16)
-        rhs = (pub_key_x**3 + secp_a*pub_key_x + secp_b) % secp_p
-        print(rhs)
-        y_sol1 = intmath().sqrtmod(rhs, secp_p) % secp_p
-        y_sol2 = (secp_p - y_sol1) % secp_p
-        if comp_pub_key[0:4] == '0x02':
-            hex_y_neg = hex(min(y_sol1, y_sol2))
-            return '0x04' + str(comp_pub_key[4:]) + hex_y_neg[2:]
-        if comp_pub_key[0:4] == '0x03':
-            hex_y_pos = hex(max(y_sol1, y_sol2))
-            return '0x04' + str(comp_pub_key[4:]) + hex_y_pos[2:]
+        rhs = (pow(pub_key_x,3) + secp_a*pub_key_x + secp_b) % secp_p    
+        y_sol1 = intmath().sqrtmod(rhs, secp_p) 
+        y_sol2 = (secp_p - y_sol1)
+        print("pubkey x-coordinate:", pub_key_x) 
+        print("x^3 + 7=", rhs) 
+        print("y_1 =", y_sol1)
+        print("y_2 =", y_sol2)
+        print("(y_1)^2 =", pow(y_sol1, 2, secp_p))
+        if pow(y_sol1, 2, secp_p) == rhs and pow(y_sol2, 2, secp_p) == rhs:
+            if comp_pub_key[0:4] == '0x02':
+                hex_y_neg = hex(min(y_sol1, y_sol2))
+                return '0x04' + str(comp_pub_key[4:]) + hex_y_neg[2:]
+            if comp_pub_key[0:4] == '0x03':
+                hex_y_pos = hex(max(y_sol1, y_sol2))
+                return '0x04' + str(comp_pub_key[4:]) + hex_y_pos[2:]
+        else: 
+            raise Exception("Decompression Failed.")
 
     def wif(self, priv_key):
         prefix = "L"
@@ -344,8 +311,7 @@ class libsecp(object):
         return point_sum
 
 
-     
-
+    
 def key_store(num_keys):
     for i in range(num_keys):
         privkey = libsecp().private_key()
@@ -360,17 +326,24 @@ def key_store(num_keys):
 def symmetric_key():
     return random.randint(1, sym_key_n)
 
+
+
 #Unittest
 privkey = libsecp().private_key()
 pubkey = libsecp().point_mul(privkey, secp_G)
+hex_pubkey = libsecp().public_key_hex(pubkey)
 comp_pubkey = libsecp().compress_key(pubkey)
+comp_hex_pubkey = libsecp().compress_key(hex_pubkey)
 wif_key = libsecp().wif(privkey)
 
 #print("Private Key:", privkey)
-#print("Public Key:", pubkey)
-print("Public Key (hex):", libsecp().public_key_hex(pubkey))
+print("Public Key:", pubkey)
+print("Public Key (hex):", hex_pubkey)
 print("Compressed public key:", comp_pubkey)
+print("Compressed (hex) public key:", comp_hex_pubkey)
+print("Compression equality:", comp_pubkey == comp_hex_pubkey)
 print("Decompressed public key:", libsecp().decompress_key(comp_pubkey))
-print(" Decompressed key = pubkey:", libsecp().decompress_key(comp_pubkey) == pubkey)
+print("Decompressed key length:", len(libsecp().decompress_key(comp_pubkey)))
+print("Decompressed key = pubkey:", libsecp().decompress_key(comp_pubkey) == pubkey)
 #print("WIF private key:", wif_key)
 #print("decoded WIF key:", libsecp().decode_wif(wif_key))
