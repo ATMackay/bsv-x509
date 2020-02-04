@@ -30,9 +30,9 @@ def password_check(password_attempt):
     # Uses a hard-coded password hash (insecure)
     password_hash = '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92'
     if hashlib.sha256(password_attempt.encode()).hexdigest() == password_hash:
-        pass
+        return True
     else:   
-        raise Exception("Password Failed")
+        return False
 
 attempt = password_check('123456')
 
