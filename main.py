@@ -47,9 +47,6 @@ def create_certificate():
         quit()
 
 
-
-
-
 def validate_certificate():
     print("Enter certificate TXID")
     cert_txid = input()
@@ -61,6 +58,7 @@ def validate_certificate():
     print("Extracting OP_RETURN...")
     time.sleep(2)
     cert_data = network.extract_nulldata(cert_txid)
+
 
 
 def main():

@@ -29,6 +29,7 @@ def user_id(person_name, company):
 
 # Certificate class
 class cert_x509(object): 
+    certificate_length = 7
     """This class generates X.509 fields"""
     # 4-byte version number
     version = 3
@@ -38,10 +39,10 @@ class cert_x509(object):
     issuer = "ATMackay Certificates"
     # Root certificate location
     root_loc = 0x5a743f68a759bda8fecfc4aab4af4d8e75e300d2c880ebbef25abbd21680eaec
-    root_vout = 1 
+    root_vout = 0 
     # Intermediate certificate location
     int_cert_loc = 0x17a8b9994f1e89855b34660ea1d17061ae65833f1ded395c4c6a72d2d98832a6
-    int_cert_vout = 1 
+    int_cert_vout = 0 
     # Validity period 
     not_before = time.time()
     not_after = time.time() + 7776000 # Time + 90 days
@@ -66,14 +67,35 @@ class cert_x509(object):
             raise Exception("Subject name must be a string object up to 32 bytes!")
         if type(unique_id) != str or sys.getsizeof(unique_id) > 34:
             raise Exception("Subject name must be a string object up to 32 bytes!")
-        return [cert_x509().version, cert_x509().serial, cert_x509().issuer, certified_party, cert_x509().key_gen(), device_id, unique_id]
+        certificate = dict()
+        certificate[0] = cert_x509().version
+        certificate[1] = cert_x509().serial
+        certificate[2] = cert_x509().issuer
+        certificate[3] = cert_x509().root_loc
+        certificate[4] = cert_x509().root_vout
+        certificate[5] = cert_x509().int_cert_loc
+        certificate[6] = cert_x509().int_cert_vout
+        certificate[6] = cert_x509().not_before
+        certificate[6] = cert_x509().not_after
+        certificate[7] = str(certified_party)
+        certificate[8] = cert_x509().key_gen()
+        certificate[9] = str(device_id)
+        certificate[10] = str(unique_id)
+        return certificate
 
     def x509_format(self, cert):
-        #input must be an array of certificate field objects
+        # Input certificate array object
+        if len(cert) != 7:
+            raise Exception('input must be an array of length 10 containing certificate field objects')
+        #
         return 0
 
     def hex_encode(self, formatted_cert):
-        return hex
+        serialized_obj = ''
+        for i in range(len(formatted_cert)):
+            serialized_obj += formatted_cert[i]
+        # ASCII conversion
+        return 0
 
     def base64_encode(self, formatted_cert):
         # Input string contaning generated certificate 
@@ -81,7 +103,7 @@ class cert_x509(object):
 
         return encoded_cert
 
-    def decode():
+    def hex_decode(hex_cert):
         # Input formatted Base64 or Hex encoded certificate
         return 0
 

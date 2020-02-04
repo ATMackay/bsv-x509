@@ -34,8 +34,6 @@ def extract_nulldata(txid, v_out):
     return target_opreturn[4:]
 
 
-       
-
 def broadcast(raw_tx):
     # raw_tx must be a JSON object
     request_post = req.post("https://api.whatsonchain.com/v1/bsv/main/tx/raw/", my_tx)
