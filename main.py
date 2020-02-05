@@ -75,8 +75,6 @@ def main():
         time.sleep(2)
         quit()
 
-
-
 if __name__=="__main__":       
     main()
         

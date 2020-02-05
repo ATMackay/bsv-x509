@@ -1,10 +1,11 @@
 # This programme connects to Bitcoin SV endpoints for broadcasting/retrieving transaction 
 # blockchain data. This programme depends on WhatsOnChain.com servers for data
+import libsecp256k1
 import transaction
 import json
 import requests as req
 import sys
-import libsecp256k1
+
 
 
 tx_out_size_limit = 100000

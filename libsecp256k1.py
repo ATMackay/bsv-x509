@@ -34,8 +34,6 @@ def password_check(password_attempt):
     else:   
         return False
 
-attempt = password_check('123456')
-
 def bin_array(integer):
     # Returns a binarry array representation of a positive intger
     if type(integer)!= int or integer < 0:
@@ -335,22 +333,4 @@ def symmetric_key():
 
 
 
-#Unittest
-#privkey = libsecp().private_key()
-#pubkey = libsecp().point_mul(privkey, secp_G)
-#hex_pubkey = libsecp().public_key_hex(pubkey)
-#comp_pubkey = libsecp().compress_key(pubkey)
-#comp_hex_pubkey = libsecp().compress_key(hex_pubkey)
-#wif_key = libsecp().wif(privkey)
 
-#print("Private Key:", privkey)
-#print("Public Key:", pubkey)
-#print("Public Key (hex):", hex_pubkey)
-#print("Compressed public key:", comp_pubkey)
-#print("Compressed (hex) public key:", comp_hex_pubkey)
-#print("Compression equality:", comp_pubkey == comp_hex_pubkey)
-#print("Decompressed public key:", libsecp().decompress_key(comp_pubkey))
-#print("Decompressed key length:", len(libsecp().decompress_key(comp_pubkey)))
-#print("Decompressed key = pubkey:", libsecp().decompress_key(comp_pubkey) == pubkey)
-#print("WIF private key:", wif_key)
-#print("decoded WIF key:", libsecp().decode_wif(wif_key))

@@ -28,7 +28,7 @@ def user_id(person_name, company):
     return hashlib.sha256(preimg.encode()).digest()
 
 # Certificate class
-class cert_x509(object): 
+class cert(object): 
     certificate_length = 7
     """This class generates X.509 fields"""
     # 4-byte version number
@@ -38,10 +38,10 @@ class cert_x509(object):
     # Certificate issuer 
     issuer = "ATMackay Certificates"
     # Root certificate location
-    root_loc = 0x5a743f68a759bda8fecfc4aab4af4d8e75e300d2c880ebbef25abbd21680eaec
+    root_loc = '5a743f68a759bda8fecfc4aab4af4d8e75e300d2c880ebbef25abbd21680eaec'
     root_vout = 0 
     # Intermediate certificate location
-    int_cert_loc = 0x17a8b9994f1e89855b34660ea1d17061ae65833f1ded395c4c6a72d2d98832a6
+    int_cert_loc = '17a8b9994f1e89855b34660ea1d17061ae65833f1ded395c4c6a72d2d98832a6'
     int_cert_vout = 0 
     # Validity period 
     not_before = time.time()
@@ -51,8 +51,9 @@ class cert_x509(object):
 
     def key_gen(self):
         priv_key = libsecp256k1.libsecp().private_key()
-        pub_key = libsecp256k1.libsecp().public_hex_key(priv_key)
-        return pub_key
+        pubkey = libsecp256k1.libsecp().point_mul(priv_key, libsecp256k1.secp_G)
+        hex_pubkey = libsecp256k1.libsecp().public_key_hex(pubkey)
+        return hex_pubkey
 
     def encrypt(self, hex_cert, enc_key):
         # Does AES symmetric encryption of hex encoded formatted certificate
@@ -61,31 +62,31 @@ class cert_x509(object):
         return 0
 
     def generate(self, certified_party, device_id, unique_id):
-        if type(certified_party) != str or sys.getsizeof(certified_party) > 128:
+        if type(certified_party) != str or sys.getsizeof(certified_party) > 128*8:
             raise Exception("Subject name must be a string object up to 128 bytes!")
-        if type(device_id) != str or sys.getsizeof(device_id) > 34:
-            raise Exception("Subject name must be a string object up to 32 bytes!")
-        if type(unique_id) != str or sys.getsizeof(unique_id) > 34:
-            raise Exception("Subject name must be a string object up to 32 bytes!")
+        if type(device_id) != str or sys.getsizeof(device_id) > 34*8:
+            raise Exception("Subject device ID must be a string object up to 32 bytes!")
+        if type(unique_id) != str or sys.getsizeof(unique_id) > 34*8:
+            raise Exception("Subject ID must be a string object up to 32 bytes!")
         certificate = dict()
-        certificate[0] = cert_x509().version
-        certificate[1] = cert_x509().serial
-        certificate[2] = cert_x509().issuer
-        certificate[3] = cert_x509().root_loc
-        certificate[4] = cert_x509().root_vout
-        certificate[5] = cert_x509().int_cert_loc
-        certificate[6] = cert_x509().int_cert_vout
-        certificate[6] = cert_x509().not_before
-        certificate[6] = cert_x509().not_after
-        certificate[7] = str(certified_party)
-        certificate[8] = cert_x509().key_gen()
-        certificate[9] = str(device_id)
-        certificate[10] = str(unique_id)
+        certificate['Version number:'] = cert().version
+        certificate['Serial number:'] = cert().serial
+        certificate['Issuer:'] = cert().issuer
+        certificate['Root certificate txid:'] = cert().root_loc
+        certificate['Root certificate vout:'] = cert().root_vout
+        certificate['Intermediate certificate txid:'] = cert().int_cert_loc
+        certificate['Intermediate certificate vout:'] = cert().int_cert_vout
+        certificate['Validity period start:'] = cert().not_before
+        certificate['Validity period finish'] = cert().not_after
+        certificate['Subject name'] = str(certified_party)
+        certificate['Subject public key'] = cert().key_gen()
+        certificate['Subject device id'] = str(device_id)
+        certificate['Subject unique id'] = str(unique_id)
         return certificate
 
-    def x509_format(self, cert):
+    def _format(self, cert):
         # Input certificate array object
-        if len(cert) != 7:
+        if len(cert) != 12:
             raise Exception('input must be an array of length 10 containing certificate field objects')
         #
         return 0
@@ -107,8 +108,6 @@ class cert_x509(object):
         # Input formatted Base64 or Hex encoded certificate
         return 0
 
-
-# Test
 
 
 
