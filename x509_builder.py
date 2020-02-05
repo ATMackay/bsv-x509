@@ -1,8 +1,10 @@
 # This programme contaisn a class of functions generates an X.512 certificate 
 import time
 import sys
+import json
 import numpy as np
 import hashlib
+import binascii
 import random
 import libsecp256k1
 
@@ -30,7 +32,7 @@ def user_id(person_name, company):
 # Certificate class
 class cert(object): 
     certificate_length = 7
-    """This class generates X.509 fields"""
+    """This class contains functions that generate, encrypt and encode X.509 fields"""
     # 4-byte version number
     version = 3
     # 16-byte serial number 
@@ -59,44 +61,80 @@ class cert(object):
         # Does AES symmetric encryption of hex encoded formatted certificate
         if type(hex_cert) != hex:
             raise Excpetion("Certificate not formatted correctly for encryption.")
+
+        #AES/BIE1 Encryption
         return 0
 
-    def generate(self, certified_party, device_id, unique_id):
+    def cert_data(self, certified_party, device_id, unique_id):
+        # generates an array object containing certificate entries
         if type(certified_party) != str or sys.getsizeof(certified_party) > 128*8:
             raise Exception("Subject name must be a string object up to 128 bytes!")
         if type(device_id) != str or sys.getsizeof(device_id) > 34*8:
             raise Exception("Subject device ID must be a string object up to 32 bytes!")
         if type(unique_id) != str or sys.getsizeof(unique_id) > 34*8:
             raise Exception("Subject ID must be a string object up to 32 bytes!")
-        certificate = dict()
-        certificate['Version number:'] = cert().version
-        certificate['Serial number:'] = cert().serial
-        certificate['Issuer:'] = cert().issuer
-        certificate['Root certificate txid:'] = cert().root_loc
-        certificate['Root certificate vout:'] = cert().root_vout
-        certificate['Intermediate certificate txid:'] = cert().int_cert_loc
-        certificate['Intermediate certificate vout:'] = cert().int_cert_vout
-        certificate['Validity period start:'] = cert().not_before
-        certificate['Validity period finish'] = cert().not_after
-        certificate['Subject name'] = str(certified_party)
-        certificate['Subject public key'] = cert().key_gen()
-        certificate['Subject device id'] = str(device_id)
-        certificate['Subject unique id'] = str(unique_id)
+        certificate_data = list()
+        certificate_data.append(cert().version)
+        certificate_data.append(cert().serial)
+        certificate_data.append(cert().issuer)
+        certificate_data.append(cert().root_loc)
+        certificate_data.append(cert().root_vout)
+        certificate_data.append(cert().int_cert_loc)
+        certificate_data.append(cert().int_cert_vout)
+        certificate_data.append(cert().not_before)
+        certificate_data.append(cert().not_after)
+        certificate_data.append(certified_party)
+        certificate_data.append(cert().key_gen())
+        certificate_data.append(device_id)
+        certificate_data.append(unique_id)
+
+        return certificate_data
+        
+
+    def generate(self, certified_party, device_id, unique_id):
+        # generates an array object containing certificate entries with labels 
+        if type(certified_party) != str or sys.getsizeof(certified_party) > 128*8:
+            raise Exception("Subject name must be a string object up to 128 bytes!")
+        if type(device_id) != str or sys.getsizeof(device_id) > 34*8:
+            raise Exception("Subject device ID must be a string object up to 32 bytes!")
+        if type(unique_id) != str or sys.getsizeof(unique_id) > 34*8:
+            raise Exception("Subject ID must be a string object up to 32 bytes!")
+        certificate = list()
+        c_data = cert().cert_data(certified_party, device_id, unique_id)
+        certificate.append('Version number: '+str(c_data[0]))
+        certificate.append('Serial number: '+str(c_data[1]))
+        certificate.append('Issuer: '+str(c_data[2]))
+        certificate.append('Root certificate txid: '+str(c_data[3]))
+        certificate.append('Root certificate vout: '+str(c_data[4]))
+        certificate.append('Intermediate certificate txid: '+str(c_data[5]))
+        certificate.append('Intermediate certificate vout: '+str(c_data[6]))
+        certificate.append('Validity period start: '+str(c_data[7]))
+        certificate.append('Validity period finish: '+str(c_data[8]))
+        certificate.append('Subject name: '+str(certified_party))
+        certificate.append('Subject public key: '+str(c_data[10]))
+        certificate.append('Subject device id: '+str(device_id))
+        certificate.append('Subject unique id: '+str(unique_id))
+
         return certificate
+
+
+
+    def get_size(self, cert):
+        # returns memory size of certificate in bytes
+        return sys.getsizeof(cert)
 
     def _format(self, cert):
         # Input certificate array object
-        if len(cert) != 12:
-            raise Exception('input must be an array of length 10 containing certificate field objects')
-        #
-        return 0
+        if len(cert) > 13:
+            raise Exception('input must be an array of length 12 containing strings.')
+        return json.dumps(cert)
 
-    def hex_encode(self, formatted_cert):
+    def hex_encode(self, cert_):
         serialized_obj = ''
-        for i in range(len(formatted_cert)):
-            serialized_obj += formatted_cert[i]
+        for i in range(len(cert_)):
+            serialized_obj += str(cert_[i])
         # ASCII conversion
-        return 0
+        return binascii.hexlify(serialized_obj.encode())
 
     def base64_encode(self, formatted_cert):
         # Input string contaning generated certificate 
