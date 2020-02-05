@@ -58,6 +58,18 @@ def validate_certificate():
     print("Extracting OP_RETURN...")
     time.sleep(2)
     cert_data = network.extract_nulldata(cert_txid)
+    certificate = x509_builder.decode(cert_data)
+    formatted_cert = x509_builder.json_format(certificate)
+    print(certificate)
+    print("\n\nValidating chain of trust")
+    time.sleep(1)
+    print("\n\nExtracting intermediate certificate.")
+    intermed_txid = 
+    intermed_vout = 
+    print("\n\nExtracting root certificate.")
+    root_txid = 
+    root_vout =
+
 
 
 
