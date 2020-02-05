@@ -36,5 +36,9 @@ tx_id2 = "5f40fa5a4291b369035cb65d2a0086c3e3b05f7e95efca0682a418f6929dec0b"
 #print(extract_nulldata(tx_id2, 0), "\n \n")
 
 # x509 unit test
-print(x509_builder.cert().generate('a','a','a'))
+test_cert = x509_builder.cert().cert_data('a','a','a')
+formatted_cert = x509_builder.cert()._format(test_cert)
+print(test_cert)
+print(formatted_cert)
+print('\n\n', x509_builder.cert().hex_encode(test_cert))
 
