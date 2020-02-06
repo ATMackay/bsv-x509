@@ -20,6 +20,6 @@ Linux:
 
 Example Transactions (WhatOnChain.com)
 
-* https://whatsonchain.com/09bf2e97d4bccf6f76fec796b1062af496c23414b146a75a018cc40990964400
-* https://whatsonchain.com/5aa85ef98aa2514967ad039a6675e55c8f0b367f68dd27da859e1449a1657bd1
+* https://whatsonchain.com/tx/09bf2e97d4bccf6f76fec796b1062af496c23414b146a75a018cc40990964400
+* https://whatsonchain.com/tx/5aa85ef98aa2514967ad039a6675e55c8f0b367f68dd27da859e1449a1657bd1
 
