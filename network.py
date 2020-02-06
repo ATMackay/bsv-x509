@@ -19,10 +19,11 @@ def retrieve_tx(txid):
     return request_json
 
 def extract_nulldata(txid, v_out):
+    v_out = int(v_out)
     if type(txid) != str or len(txid) > 64:
         raise Exception("input txid not formatted correctly!. txid must be a string of length 64.")
     if type(v_out) != int or v_out > 2**32:
-        raise Exception("input txid not formatted correctly!. txid must be a string of length 64.")
+        raise Exception("input vout not formatted correctly!. txid must be a string of length 64.")
     target_tx = retrieve_tx(txid)
     target_data_list = target_tx.get('vout')[v_out]
     if sys.getsizeof(target_data_list) > tx_out_size_limit:

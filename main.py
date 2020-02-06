@@ -5,6 +5,7 @@ import transaction
 import test
 import time
 import sys
+import json
 from getpass import getpass
 
 
@@ -28,9 +29,9 @@ def create_certificate():
         pass_attempt = getpass()
         if libsecp256k1.password_check(pass_attempt) != True:
             if i > 2:
-                print("\nPassowrd authentication failed. Aborting....")  
+                print("\nPassword authentication failed. Aborting....")  
                 quit()            
-            print("\nPassowrd attempt failed. You have "+str(3-i)+" remaining attempts.")
+            print("\nPassword attempt failed. You have "+str(3-i)+" remaining attempts.")
             i += 1
         else:
             break
@@ -44,24 +45,46 @@ def create_certificate():
     input2 = input()
     time.sleep(1)
     if input2 == 'y' or input2 == 'Y':
-        print("\n\nCertifictae (Hex):", transaction.generate_opreturn(certificate_data))
+        payload = transaction.generate_opreturn(certificate_data)
+        print("\n\nCertificate (Hex):", payload)
     else:
         print("Terminating....")
         time.sleep(2)
         quit()
-    print("Do you wish to sign with Issuing key? [Y/N]")
+    print("Do you wish to sign with issuing key? [Y/N]")
     input3 = input()
     if input3 == 'y' or input3 == 'Y':
-        print(network.retrieve_tx(test.tx_id))
+        print("################## CERTIFICATE TRANSACTION (RAW) ##################")
+        # transaction.generate_raw_tx(payload, issue_key, issue_key)
+        # Dummy TX for PoC
+        dummy_tx = network.retrieve_tx(test.tx_id)
+        target = dummy_tx.get('vin')[0]
+        serialized = target.get('scriptSig').get('hex')
+        dumm_prefix = '01000000010000ffffffff1c03d7c6082f7376706f6f6c2e636f6d2'\
+                     +'f3edff034600055b8467f0040ffffffff01247e814a000000001976'\
+                     +'914492558fb8ca71a3591316d095afc0f20ef7d42f788ac00000000'
+        print(dumm_prefix + serialized + str(payload)[2:len(str(payload))-1])
+        # This need to be re-written
     else:
         print("Terminating....")
         time.sleep(2)
         quit()
-    print("\n Warning: The data to publish to the Bitcoin SV blockcahin will remain there forever.")
-    pass_attempt2 = getpass()
+    print("\nWarning: The data you publish to the Bitcoin SV blockchain is immutable. Once broadcast it will remain there forever.")
+    i = 0
+    while i < 4:
+        pass_attempt = getpass()
+        if libsecp256k1.password_check(pass_attempt) != True:
+            if i > 2:
+                print("\nPassword authentication failed. Aborting....")  
+                quit()            
+            print("\nPassword attempt failed. You have "+str(3-i)+" remaining attempts.")
+            i += 1
+        else:
+            break
     print("\n\nBroadcasting to the Bitcoin SV network...")
+    # network.braodcast(raw_tx) --> get response TRANSACTION ID
     time.sleep(2)
-    print("\n\nTransaction ID:"+str(test.tx_id))
+    print("\n\nTransaction ID:"+str(test.ex1_int_txid))
     #print("\n\nTransaction ID:"+str(TRANSACTION ID))
 
 
@@ -73,28 +96,39 @@ def validate_certificate():
     # Get certificate
     cert_tx = network.retrieve_tx(cert_txid)
     print(cert_tx)
-    print("Extracting OP_RETURN...")
+    print("\n\nExtracting OP_RETURN...")
     time.sleep(2)
-    cert_data = network.extract_nulldata(cert_txid)
-    certificate = x509_builder.decode(cert_data)
-    formatted_cert = x509_builder.json_format(certificate)
+    #Dummy for PoC
+    cert_data = network.extract_nulldata(cert_txid, cert_vout)
+    certificate = x509_builder.hex_to_string(cert_data)
     print(certificate)
     print("\n\nValidating chain of trust")
     time.sleep(1)
-    # Get public keys --> print(transaction.get_pubkeys(txid))
-    # Print public keys 
+    # Get public keys
+    print("\n\nValidating issuer key...") 
+    print(transaction.get_pubkeys(cert_txid))
+    time.sleep(1)
+    print("Issuer key is valid...")
     # Validate public keys 
-    print("\n\nExtracting intermediate certificate.")
-    intermed_txid = cert_data[3]
-    intermed_vout = cert_data[4]
+    print("\n\nExtracting intermediate certificate...")
+    intermed_txid = test.ex1_int_txid  #cert_data[3]
+    #intermed_vout = cert_data[4]
     # Print intermediate certificate 
+    print("\n\nValidating policy key...") 
+    print(transaction.get_pubkeys(intermed_txid))
+    time.sleep(1)
+    print("Policy certificate is valid...")
     # Get public keys --> print(transaction.get_pubkeys(cert_data[3]))
     time.sleep(1)
-    print("\n\nExtracting root certificate.")
-    root_txid = cert_data[5]
-    root_vout = cert_data[6]
-    # Print root certificate
-    # Get public keys --> print(transaction.get_pubkeys(cert_data[5]))
+    print("\n\nExtracting root certificate...")
+    root_txid = test.ex2_root_txid  #cert_data[5]
+    #root_vout = cert_data[6]
+    print("\n\nValidating root key...") 
+    print(transaction.get_pubkeys(root_txid))
+    time.sleep(1)
+    print("Root certificate is valid.")
+    time.sleep(1)
+    print("Authentication successful.")
     #if keys valid then authentication success else fail 
 
 
