@@ -9,6 +9,10 @@ import transaction
 tx_id = "81d29f7cd268249d33e617e511221718ac2b955a1b3f0a3b915e122bd904bb3e"
 tx_id2 = "5f40fa5a4291b369035cb65d2a0086c3e3b05f7e95efca0682a418f6929dec0b"
 
+ex1_int_txid = '09bf2e97d4bccf6f76fec796b1062af496c23414b146a75a018cc40990964400'
+
+ex2_root_txid = '5aa85ef98aa2514967ad039a6675e55c8f0b367f68dd27da859e1449a1657bd1'
+
 # libsecp256k1 Unittest
 #privkey = libsecp256k1.libsecp().private_key()
 #pubkey = libsecp256k1.libsecp().point_mul(privkey, secp_G)
@@ -36,11 +40,22 @@ tx_id2 = "5f40fa5a4291b369035cb65d2a0086c3e3b05f7e95efca0682a418f6929dec0b"
 #print(extract_nulldata(tx_id2, 0), "\n \n")
 
 # x509 unit test
-test_cert = x509_builder.cert_data('a','a','a')
-formatted_cert = x509_builder.json_format(test_cert)
-h = x509_builder.hex_encode(formatted_cert)
-d = x509_builder.hex_to_json(h)
-print(test_cert)
-print(formatted_cert)
-print('\n\n', h)
-print('\n\n', d)
+#test_cert_data = x509_builder.cert_data('Alex','nchain','Laptop')
+#test_cert = x509_builder.generate(test_cert_data)
+#formatted_cert = x509_builder.json_format(test_cert_data)
+#h = x509_builder.hex_encode(formatted_cert)
+#d = x509_builder.hex_to_string(h)
+
+test_root_cert_data = x509_builder.root_cert_data("CT-AM certificates")
+test_root_cert = x509_builder.generate_root(test_root_cert_data)
+formatted_root_cert = x509_builder.json_format(test_root_cert)
+
+print(formatted_root_cert)
+op_return = transaction.generate_opreturn(test_root_cert_data)
+decode_opreturn = transaction.decode_opreturn(op_return)
+#print('\n\n', formatted_cert)
+#print('\n\n', h)
+#print('\n\n', d)
+
+print('\n', op_return)
+print('\n', decode_opreturn)

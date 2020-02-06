@@ -30,9 +30,12 @@ def extract_nulldata(txid, v_out):
 
     target_opreturn = target_data_list.get('scriptPubKey').get('hex')
     # Check that output is a valid OP_RETURN or OP_FALSE OP_RETURN
-    if target_opreturn[0:4] != '006a':
+    if target_opreturn[0:4] == '006a':
+        return target_opreturn[4:]
+    elif target_opreturn[0:2] == '6a':
+        return target_opreturn[2:]
+    else:
         raise Exception("Not a valid data outpoint")
-    return target_opreturn[4:]
 
 
 def broadcast(raw_tx):

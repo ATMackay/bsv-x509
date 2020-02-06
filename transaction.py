@@ -4,7 +4,12 @@ import libsecp256k1
 import x509_builder
 import network
 import json
+import hashlib
+import binascii
 
+
+#Hard coded variables
+ca_prefix = '424430a'
 
 def generate_raw_tx(data, recipient, key):
     # Inputs are data payload, recipient address and signing key    
@@ -32,4 +37,23 @@ def check_pubkeys(txid):
     # Import key list 
     # Check list against hash (hard coded)
     return True
+
+def generate_opreturn(cert):
+    # Takes JSON formatted certificate and generates OP_RETURN payload
+    # This function may be redundant
+    if len(cert) == 13:
+        return x509_builder.hex_encode(cert)
+    elif len(cert) == 7:
+        return x509_builder.hex_encode_root(cert)
+    else:
+        raise Exception("Certificate not formatted correctly!")
+
+
+def decode_opreturn(opreturn):
+    # Check if output is valid CA opreturn
+    if opreturn[0:8] != str(ca_prefix):
+        hex_cert = opreturn[10:]
+        return x509_builder.hex_to_string(hex_cert)
+    else:
+        raise Exception("Not a certificate transaction.")
      

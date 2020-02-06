@@ -7,6 +7,7 @@ import hashlib
 import binascii
 import random
 import libsecp256k1
+import transaction
 
 # Hard coded parameters
 certificate_length = 7
@@ -16,7 +17,7 @@ version = 3
 # 16-byte serial number 
 serial = 123456
 # Certificate issuer 
-issuer = "ATMackay Certificates"
+issuer = "CT-AM Certificates"
 # Root certificate location
 root_loc = '5a743f68a759bda8fecfc4aab4af4d8e75e300d2c880ebbef25abbd21680eaec'
 root_vout = 0 
@@ -26,6 +27,16 @@ int_cert_vout = 0
 # Validity period 
 not_before = time.time()
 not_after = time.time() + 7776000 # Time + 90 days
+
+# Root CA
+root_ca = "CT-AM Certificates"
+root_not_after = time.time() + 630700000 # Time + 20 years
+root_key = '033b8143795af7ff119608282fe496ed5e7bbd87eecf43200e41892ba4088a00b'
+
+#Field format size
+
+f_format  = [4, 8, 32, 64, 4, 64, 4, 32, 18, 18, 66, 8, 8] 
+f_format_root  = [4, 8, 32, 18, 18, 66, 8] 
 
 def gen_device_id(person_name, device_type):
     # Generates unique device ID from user + device name
@@ -55,8 +66,8 @@ def user_id(person_name, company):
 def key_gen():
     priv_key = libsecp256k1.libsecp().private_key()
     pubkey = libsecp256k1.libsecp().point_mul(priv_key, libsecp256k1.secp_G)
-    hex_pubkey = libsecp256k1.libsecp().public_key_hex(pubkey)
-    return hex_pubkey
+    comp_hex_key = libsecp256k1.libsecp().compress_key(pubkey)
+    return comp_hex_key
 
 def encrypt(hex_cert, enc_key):
     raise Exception("Encryption not currently supported")
@@ -96,7 +107,8 @@ def cert_data(certified_party, company, device_type):
     return certificate_data
     
 
-def generate(certified_party, company, device_type):
+def generate(cert_data):
+    certified_party, company, device_type = cert_data[9], cert_data[11], cert_data[12]
     # generates an array object containing certificate entries with labels 
     if type(certified_party) != str or sys.getsizeof(certified_party) > 128*8:
         raise Exception("Subject name must be a string object up to 128 bytes!")
@@ -108,22 +120,53 @@ def generate(certified_party, company, device_type):
     unique_id = user_id(certified_party, company)
 
     certificate = list()
-    c_data = cert().cert_data(certified_party, device_id, unique_id)
-    certificate.append('Version number: '+str(c_data[0]))
-    certificate.append('Serial number: '+str(c_data[1]))
-    certificate.append('Issuer: '+str(c_data[2]))
-    certificate.append('Root certificate txid: '+str(c_data[3]))
-    certificate.append('Root certificate vout: '+str(c_data[4]))
-    certificate.append('Intermediate certificate txid: '+str(c_data[5]))
-    certificate.append('Intermediate certificate vout: '+str(c_data[6]))
-    certificate.append('Validity period start: '+str(c_data[7]))
-    certificate.append('Validity period finish: '+str(c_data[8]))
+    certificate.append('Version number: '+str(cert_data[0]))
+    certificate.append('Serial number: '+str(cert_data[1]))
+    certificate.append('Issuer: '+str(cert_data[2]))
+    certificate.append('Root certificate txid: '+str(cert_data[3]))
+    certificate.append('Root certificate vout: '+str(cert_data[4]))
+    certificate.append('Intermediate certificate txid: '+str(cert_data[5]))
+    certificate.append('Intermediate certificate vout: '+str(cert_data[6]))
+    certificate.append('Validity period start: '+str(cert_data[7]))
+    certificate.append('Validity period finish: '+str(cert_data[8]))
     certificate.append('Subject name: '+str(certified_party))
-    certificate.append('Subject public key: '+str(c_data[10]))
+    certificate.append('Subject public key: '+str(cert_data[10]))
     certificate.append('Subject device id: '+str(device_id))
     certificate.append('Subject unique id: '+str(unique_id))
 
     return certificate
+
+def root_cert_data(root_ca):
+    # generates an array object containing root certificate entries
+    if type(root_ca) != str or sys.getsizeof(root_ca) > 128*8:
+        raise Exception("Subject name must be a string object up to 128 bytes!")
+
+    root_id = user_id(root_ca, root_ca)
+
+    certificate_data = list()
+    certificate_data.append(version)
+    certificate_data.append(serial)
+    certificate_data.append(root_ca)
+    certificate_data.append(not_before)
+    certificate_data.append(root_not_after)
+    certificate_data.append(root_key)
+    certificate_data.append(root_id)
+
+    return certificate_data
+
+def generate_root(cert_data):
+    # Clean up 
+    certificate = list()
+    certificate.append('Version number: '+str(cert_data[0]))
+    certificate.append('Serial number: '+str(cert_data[1]))
+    certificate.append('Issuer: '+str(cert_data[2]))
+    certificate.append('Validity period start: '+str(cert_data[3]))
+    certificate.append('Validity period finish: '+str(cert_data[4]))
+    certificate.append('CA Root public key: '+str(cert_data[5]))
+    certificate.append('CA unique id: '+str(cert_data[6]))
+
+    return certificate
+    
 
 
 
@@ -135,20 +178,34 @@ def json_format(cert_):
     # Input certificate array object
     if len(cert_) > 13:
         raise Exception('input must be an array of length 12 containing strings.')
-    return json.dumps(cert_)
+    return json.dumps(cert_, indent = 4)
 
 def hex_encode(cert_):
-    serialized_obj = ''
+    # JSON object to hex 
+    prefix = transaction.ca_prefix
+    serialized_obj = prefix
     for i in range(len(cert_)):
-        serialized_obj += str(cert_[i])
+        serialized_obj += str(cert_[i]).zfill(f_format[i])
     # ASCII conversion
     return binascii.hexlify(serialized_obj.encode())
 
-def hex_to_json(hex_cert):
+def hex_encode_root(cert_):
+    # JSON object to hex 
+    prefix = transaction.ca_prefix
+    serialized_obj = prefix
+    for i in range(len(cert_)):
+        serialized_obj += str(cert_[i]).zfill(f_format_root[i])
+    # ASCII conversion
+    return binascii.hexlify(serialized_obj.encode())
+
+def hex_to_string(hex_cert):
     # Input formatted Hex encoded certificate
     # Outout a json object containing certificate
+    # CERTIFICATE NEEDS TO BE ENCODED CORRECTLY 
     decode = binascii.unhexlify(hex_cert)
     return decode
+
+
 
 
 

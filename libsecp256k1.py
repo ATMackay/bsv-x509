@@ -222,10 +222,10 @@ class libsecp(object):
         else:
             pref = '03'   
         result = '0x' + pref + str(hex(pub_key_x)[2:])
-        print(len(result))
         return result
 
     def decompress_key(self, comp_pub_key):
+        raise Exception("Not currently supported.")
         """Calculate the modular square root of x^3 + 7"""
         if len(comp_pub_key) != 68:
             raise Exception("public key must be a 32 byte string")
@@ -236,11 +236,6 @@ class libsecp(object):
         rhs = (pow(pub_key_x,3) + secp_a*pub_key_x + secp_b) % secp_p    
         y_sol1 = intmath().sqrtmod(rhs, secp_p) 
         y_sol2 = (secp_p - y_sol1)
-        #print("pubkey x-coordinate:", pub_key_x) 
-        #print("x^3 + 7=", rhs) 
-        #print("y_1 =", y_sol1)
-        #print("y_2 =", y_sol2)
-        #print("(y_1)^2 =", pow(y_sol1, 2, secp_p))
         if pow(y_sol1, 2, secp_p) == rhs and pow(y_sol2, 2, secp_p) == rhs:
             if comp_pub_key[0:4] == '0x02':
                 hex_y_neg = hex(min(y_sol1, y_sol2))
