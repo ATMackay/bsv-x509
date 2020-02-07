@@ -10,3 +10,6 @@
 *.so
 Thumbs.db
 .Trashes
+
+# Ignore these
+__pycache__/
