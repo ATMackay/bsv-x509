@@ -61,9 +61,9 @@ def create_certificate():
         target = dummy_tx.get('vin')[0]
         serialized = target.get('scriptSig').get('hex')
         dumm_prefix = '01000000010000ffffffff1c03d7c6082f7376706f6f6c2e636f6d2'\
-                     +'f3edff034600055b8467f0040ffffffff01247e814a000000001976'\
-                     +'914492558fb8ca71a3591316d095afc0f20ef7d42f788ac00000000'
-        print(dumm_prefix + serialized + str(payload)[2:len(str(payload))-1])
+                     +'f3edff034600055b8467f0040'
+        dumm_spk =   'ffffffff01247e814a000000001976' +'914492558fb8ca71a3591316d095afc0f20ef7d42f788ac00000000'
+        print(dumm_prefix + serialized +  str(payload)[2:len(str(payload))-1] + dumm_spk )
         # This need to be re-written
     else:
         print("Terminating....")
@@ -139,7 +139,7 @@ def validate_certificate():
 
 def main():
     print("\nWelcome to CT-AM SSL, certificate software powered by Bitcoin SV.\n\n \
-        Press (1) to create a new certificate, or \n         press (2) to validate an on chain certificate.\n \
+        Press (1) to create a new certificate, or \n         press (2) to validate a BSV SSL certificate.\n \
         Press any other key to exit.")
     value1 = input()
     if value1 == '1':
