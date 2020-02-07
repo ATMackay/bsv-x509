@@ -187,7 +187,7 @@ def hex_encode(cert_):
     for i in range(len(cert_)):
         serialized_obj += str(cert_[i]).zfill(f_format[i])
     # ASCII conversion
-    return binascii.hexlify(serialized_obj.encode())
+    return binascii.b2a_hex(serialized_obj.encode())#binascii.hexlify(serialized_obj.encode())
 
 def hex_encode_root(cert_):
     # JSON object to hex 
@@ -204,6 +204,15 @@ def hex_to_string(hex_cert):
     # CERTIFICATE NEEDS TO BE ENCODED CORRECTLY 
     decode = binascii.unhexlify(hex_cert)
     return decode
+
+def bytes_to_ascii(byt):
+    # input bytes
+    # output ascii text
+    string = ''
+    loop_num = len(byt)//45
+    for i in range(loop_num):
+        string += str(binascii.b2a_hex(byt[45*i:45*(i+1)]))
+    return string 
 
 
 

@@ -6,6 +6,8 @@ import network
 import transaction
 
 # Example Transaction IDS 
+tx_id0 = "b504695248bb2bd6dbd80ced56980c5a931b35708b9f84682175d397ac86f692"
+
 tx_id = "81d29f7cd268249d33e617e511221718ac2b955a1b3f0a3b915e122bd904bb3e"
 tx_id2 = "5f40fa5a4291b369035cb65d2a0086c3e3b05f7e95efca0682a418f6929dec0b"
 

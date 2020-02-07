@@ -84,7 +84,7 @@ def create_certificate():
     print("\n\nBroadcasting to the Bitcoin SV network...")
     # network.braodcast(raw_tx) --> get response TRANSACTION ID
     time.sleep(2)
-    print("\n\nTransaction ID:"+str(test.ex1_int_txid))
+    print("\n\nTransaction ID:"+str(test.tx_id0))
     #print("\n\nTransaction ID:"+str(TRANSACTION ID))
 
 
@@ -100,15 +100,17 @@ def validate_certificate():
     time.sleep(2)
     #Dummy for PoC
     cert_data = network.extract_nulldata(cert_txid, cert_vout)
-    certificate = x509_builder.hex_to_string(cert_data)
-    print(certificate)
+    certificate_bytes = transaction.decode_opreturn(cert_data)
+    print("\n", certificate_bytes)
+    # Need to convert OP_RETURN data to string
+    # Still need to clear up the encoding and decoding path
     print("\n\nValidating chain of trust")
     time.sleep(1)
     # Get public keys
     print("\n\nValidating issuer key...") 
     print(transaction.get_pubkeys(cert_txid))
     time.sleep(1)
-    print("Issuer key is valid...")
+    print("Issuer certificate is valid.")
     # Validate public keys 
     print("\n\nExtracting intermediate certificate...")
     intermed_txid = test.ex1_int_txid  #cert_data[3]
@@ -117,7 +119,7 @@ def validate_certificate():
     print("\n\nValidating policy key...") 
     print(transaction.get_pubkeys(intermed_txid))
     time.sleep(1)
-    print("Policy certificate is valid...")
+    print("Policy certificate is valid.")
     # Get public keys --> print(transaction.get_pubkeys(cert_data[3]))
     time.sleep(1)
     print("\n\nExtracting root certificate...")
@@ -128,7 +130,7 @@ def validate_certificate():
     time.sleep(1)
     print("Root certificate is valid.")
     time.sleep(1)
-    print("Authentication successful.")
+    print("\n\nAuthentication successful.")
     #if keys valid then authentication success else fail 
 
 
