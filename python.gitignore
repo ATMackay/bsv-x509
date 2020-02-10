@@ -11,5 +11,7 @@
 Thumbs.db
 .Trashes
 
+<<<<<<< HEAD
 # Ignore these
+
 __pycache__/
