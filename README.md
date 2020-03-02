@@ -12,7 +12,7 @@ Linux:
 
         $~/$PATH/bsv-x509
 
-    2) To begin the certificate viewer run the main.py file 
+    2) To execute the certificate viewer run the main.py file 
 
         $~/$PATH/bsv-x509 python3 main.py
 
