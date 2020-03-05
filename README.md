@@ -1,5 +1,5 @@
 # bsv-x509
-This programme generates/validates  x.509 public key certificates and publishes them to the Bitcoin SV blockchain.
+This program generates/validates x.509 public key certificates and publishes them to the Bitcoin SV blockchain.
 To run you will need to have installed the following
 
 * Python 3.6 or later
@@ -12,7 +12,7 @@ Linux:
 
         $~/$PATH/bsv-x509
 
-    2) To begin the certificate viewer run the main.py file 
+    2) To execute the certificate viewer run the main.py file 
 
         $~/$PATH/bsv-x509 python3 main.py
 
