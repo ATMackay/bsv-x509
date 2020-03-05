@@ -9,8 +9,7 @@ import hashlib
 import binascii
 
 
-#Hard coded variables
-ca_prefix = '424430a'
+
 
 def generate_raw_tx(data, recipient, key):
     # Inputs are data payload, recipient address and signing key    
