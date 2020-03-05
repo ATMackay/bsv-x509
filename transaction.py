@@ -1,5 +1,6 @@
 # This programme contains tools for generating raw transactions and extracting transaction field data
-import unittest
+import bitsv
+import bitsv
 import libsecp256k1
 import x509_builder
 import network
@@ -28,7 +29,7 @@ def get_pubkeys(txid):
         scriptsig = target_tx_inputs[i].get('scriptSig').get('asm')
         key_list[i]= str(scriptsig)[len(scriptsig)-66:]
         if key_list.get(i)[0:2] != '02' and key_list.get(i)[0:2] != '03':
-            raise Exception("Error: Inputs must be P2PKH")
+            raise Exception("Error: Inputs must be P2PKH.")
     return key_list
 
 def check_pubkeys(txid):
@@ -38,6 +39,7 @@ def check_pubkeys(txid):
     # Check list against hash (hard coded)
     return True
 
+#!!!!!!!!!!!!!!!!!!!! Redundant, use bitsv
 def generate_opreturn(cert):
     # Takes JSON formatted certificate and generates OP_RETURN payload
     # This function may be redundant
@@ -56,4 +58,8 @@ def decode_opreturn(opreturn):
         return x509_builder.hex_to_string(hex_cert)
     else:
         raise Exception("Not a certificate transaction.")
+
+
+
+
      

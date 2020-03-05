@@ -11,6 +11,8 @@
 Thumbs.db
 .Trashes
 
-# Ignore Pycache
+<<<<<<< HEAD
+# Ignore these
 
 __pycache__/
+keystore.txt

@@ -1,3 +1,4 @@
+import bitsv
 import libsecp256k1
 import x509_builder
 import network 
@@ -9,6 +10,19 @@ import json
 from getpass import getpass
 
 
+
+def passwd():
+    i = 0
+    while i < 4:
+        pass_attempt = getpass()
+        if libsecp256k1.password_check(pass_attempt) != True:
+            if i > 2:
+                print("\nPassword authentication failed. Aborting....")  
+                quit()            
+            print("\nPassword attempt failed. You have "+str(3-i)+" remaining attempts.")
+            i += 1
+        else:
+            break
 
 def create_certificate():
     print("Creating a Bitcoin SV SSL certificate..")
@@ -24,17 +38,7 @@ def create_certificate():
     print("\nEnter Issuer Username:")
     issuer = input()
     # This will be imporved in later versions
-    i = 0
-    while i < 4:
-        pass_attempt = getpass()
-        if libsecp256k1.password_check(pass_attempt) != True:
-            if i > 2:
-                print("\nPassword authentication failed. Aborting....")  
-                quit()            
-            print("\nPassword attempt failed. You have "+str(3-i)+" remaining attempts.")
-            i += 1
-        else:
-            break
+    passwd()
     # View certificate
     certificate_data = x509_builder.cert_data(subject_name, device_ID, user_ID)
     certificate_template = x509_builder.generate(certificate_data)
@@ -57,7 +61,8 @@ def create_certificate():
         print("################## CERTIFICATE TRANSACTION (RAW) ##################")
         # transaction.generate_raw_tx(payload, issue_key, issue_key)
         # Dummy TX for PoC
-        dummy_tx = network.retrieve_tx(test.tx_id)
+        # Replace with bitsv commands
+        tx = network.retrieve_tx(test.tx_id)
         target = dummy_tx.get('vin')[0]
         serialized = target.get('scriptSig').get('hex')
         dumm_prefix = '01000000010000ffffffff1c03d7c6082f7376706f6f6c2e636f6d2'\
@@ -70,21 +75,11 @@ def create_certificate():
         time.sleep(2)
         quit()
     print("\nWarning: The data you publish to the Bitcoin SV blockchain is immutable. Once broadcast it will remain there forever.")
-    i = 0
-    while i < 4:
-        pass_attempt = getpass()
-        if libsecp256k1.password_check(pass_attempt) != True:
-            if i > 2:
-                print("\nPassword authentication failed. Aborting....")  
-                quit()            
-            print("\nPassword attempt failed. You have "+str(3-i)+" remaining attempts.")
-            i += 1
-        else:
-            break
+    passwd()
     print("\n\nBroadcasting to the Bitcoin SV network...")
     # network.braodcast(raw_tx) --> get response TRANSACTION ID
     time.sleep(2)
-    print("\n\nTransaction ID:"+str(test.tx_id0))
+    print("\n\nTransaction ID:" + str(test.tx_id0))
     #print("\n\nTransaction ID:"+str(TRANSACTION ID))
 
 

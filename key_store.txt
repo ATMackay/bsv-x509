@@ -1,0 +1,20 @@
+
+'password hash' : '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92'
+
+'password' : '123456'
+
+'issuing private key' : 'Kzrt4yYJFXoLmZiFivKJ3FWWX5UyXigFmhffMQUsFGXbSbggfwnL'
+
+'issuing public key' : '18aM1rxZL5wCmTrL9MVPjN7NAWjEM2jeHV'
+
+ 'utxo data' : {  'txId': 'ba0d26ae0ced1ca3603552bfec1500ca686c2973011e0dd1d7f107881c8c310c',
+                  'outputIndex': 0,
+                  'script': '76a914531750958535fed975d15801d1477fa59a5a9bd288ac',
+                  'satoshis': 4441,
+               }
+
+             
+'session secret' : '123456';
+
+'hash algorithm' : 'crypto.hmac sha256'
+
