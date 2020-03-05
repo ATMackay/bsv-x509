@@ -46,9 +46,8 @@ def create_certificate():
         # Extract issuing key
         # Create transaction paying from and to issuing key containing OP_RETURN
         my_key = keys.my_key #Insecure
-        print("######################### CERTIFICATE TRANSACTION (RAW) ######################")
-        # Dummy TX for PoC
-        # Replace with bitsv commands
+        print(keys.my_unspents)
+        print(keys.my_transactions)
         raw_tx = my_key.create_op_return_tx(payload)
         print(raw_tx)
         # This need to be re-written
@@ -59,12 +58,20 @@ def create_certificate():
     libsecp256k1.passwd()
     print("\n\nBroadcasting to the Bitcoin SV network...")
     # network.braodcast(raw_tx) --> get response TRANSACTION ID
-    time.sleep(2)
     # Check that network has seen transaction 
-    
-    print("\n\nTransaction ID:" + str(test.tx_id0))
-    #print("\n\nTransaction ID:"+str(TRANSACTION ID))
+    txid = my_key.send_op_return(payload)
+    time.sleep(1)
+    print("\n\nTransaction ID:" + str(txid))
+    time.sleep(2)
+    print("\n\nChecking WhatsonChain...")
+    tx_list = my_key.get_transactions()
+    if txid in tx_list:
+        print("Transaction confirmed...")
+    else:
+        print("Transaction unconfirmed, retrying...")
+        
 
+# e1f250f0d1f95bc6a9874216604bb19b8805343b55752616647d4df11c8f710d
 
 def validate_certificate():
     print("Enter certificate TXID")
