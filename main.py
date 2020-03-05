@@ -70,7 +70,7 @@ def create_certificate():
         dumm_spk =   'ffffffff01247e814a000000001976' +'914492558fb8ca71a3591316d095afc0f20ef7d42f788ac00000000'
         print(dumm_prefix + serialized +  str(payload)[2:len(str(payload))-1] + dumm_spk )
         # This need to be re-written
-    else:
+    else:gi
         print("Terminating....")
         time.sleep(2)
         quit()
