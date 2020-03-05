@@ -62,7 +62,7 @@ def create_certificate():
         # transaction.generate_raw_tx(payload, issue_key, issue_key)
         # Dummy TX for PoC
         # Replace with bitsv commands
-        tx = network.retrieve_tx(test.tx_id)
+        dummy_tx = network.retrieve_tx(test.tx_id)
         target = dummy_tx.get('vin')[0]
         serialized = target.get('scriptSig').get('hex')
         dumm_prefix = '01000000010000ffffffff1c03d7c6082f7376706f6f6c2e636f6d2'\
