@@ -1,4 +1,4 @@
-import bitsv
+import keys
 import libsecp256k1
 import x509_builder
 import network 
@@ -11,74 +11,57 @@ from getpass import getpass
 
 
 
-def passwd():
-    i = 0
-    while i < 4:
-        pass_attempt = getpass()
-        if libsecp256k1.password_check(pass_attempt) != True:
-            if i > 2:
-                print("\nPassword authentication failed. Aborting....")  
-                quit()            
-            print("\nPassword attempt failed. You have "+str(3-i)+" remaining attempts.")
-            i += 1
-        else:
-            break
-
 def create_certificate():
     print("Creating a Bitcoin SV SSL certificate..")
     time.sleep(1)
     print("\nEnter Subject name:")
     subject_name = input()
+    sub_key = keys.my_address #Example. change to input user key
+    print("\nSubject Public Key:", sub_key)
     print("\nEnter Subject company:")
     subject_company = input()
     print("\nEnter Subject device type:")
     device_type = input()
-    device_ID = x509_builder.gen_device_id(subject_name, device_type)
-    user_ID = x509_builder.user_id(subject_name, subject_company)
-    print("\nEnter Issuer Username:")
-    issuer = input()
-    # This will be imporved in later versions
-    passwd()
-    # View certificate
-    certificate_data = x509_builder.cert_data(subject_name, device_ID, user_ID)
-    certificate_template = x509_builder.generate(certificate_data)
-    format_cert = x509_builder.json_format(certificate_template)
-    print("################## CERTIFICATE ##################")
+    #libsecp256k1.passwd()
+    # Instantiate certificate class
+    certificate = x509_builder.cert(subject_name, subject_company, device_type, sub_key)
+    certificate_template = certificate.generate()
+    format_cert = certificate.json_format(certificate_template)
+    print("######################## CERTIFICATE ######################")
     print(format_cert)
     print("Do you wish to procceed [Y/N]?")
     input2 = input()
     time.sleep(1)
     if input2 == 'y' or input2 == 'Y':
-        payload = transaction.generate_opreturn(certificate_data)
+        # Needs to be a JSON string
+        payload =  [x509_builder.ca_prefix.encode('utf-8'), format_cert.encode('utf-8')]#!!!!!!!!!!!!!!!!!!!!! FIX
         print("\n\nCertificate (Hex):", payload)
     else:
         print("Terminating....")
         time.sleep(2)
-        quit()
     print("Do you wish to sign with issuing key? [Y/N]")
     input3 = input()
     if input3 == 'y' or input3 == 'Y':
-        print("################## CERTIFICATE TRANSACTION (RAW) ##################")
-        # transaction.generate_raw_tx(payload, issue_key, issue_key)
+        # Decrypt_wallet
+        # Extract issuing key
+        # Create transaction paying from and to issuing key containing OP_RETURN
+        my_key = keys.my_key #Insecure
+        print("######################### CERTIFICATE TRANSACTION (RAW) ######################")
         # Dummy TX for PoC
         # Replace with bitsv commands
-        tx = network.retrieve_tx(test.tx_id)
-        target = dummy_tx.get('vin')[0]
-        serialized = target.get('scriptSig').get('hex')
-        dumm_prefix = '01000000010000ffffffff1c03d7c6082f7376706f6f6c2e636f6d2'\
-                     +'f3edff034600055b8467f0040'
-        dumm_spk =   'ffffffff01247e814a000000001976' +'914492558fb8ca71a3591316d095afc0f20ef7d42f788ac00000000'
-        print(dumm_prefix + serialized +  str(payload)[2:len(str(payload))-1] + dumm_spk )
+        raw_tx = my_key.create_op_return_tx(payload)
+        print(raw_tx)
         # This need to be re-written
     else:
         print("Terminating....")
         time.sleep(2)
-        quit()
     print("\nWarning: The data you publish to the Bitcoin SV blockchain is immutable. Once broadcast it will remain there forever.")
-    passwd()
+    libsecp256k1.passwd()
     print("\n\nBroadcasting to the Bitcoin SV network...")
     # network.braodcast(raw_tx) --> get response TRANSACTION ID
     time.sleep(2)
+    # Check that network has seen transaction 
+    
     print("\n\nTransaction ID:" + str(test.tx_id0))
     #print("\n\nTransaction ID:"+str(TRANSACTION ID))
 
@@ -134,8 +117,10 @@ def validate_certificate():
 
 def main():
     print("\nWelcome to CT-AM SSL, certificate software powered by Bitcoin SV.\n\n \
-        Press (1) to create a new certificate, or \n         press (2) to validate a BSV SSL certificate.\n \
-        Press any other key to exit.")
+            Please Enter Password:")
+    #libsecp256k1.passwd()
+    print("\nPress (1) to create a new certificate, or \n         press (2) to validate a BSV SSL certificate.\n \
+            Press any other key to exit.")
     value1 = input()
     if value1 == '1':
         create_certificate()
