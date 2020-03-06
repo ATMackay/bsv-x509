@@ -9,7 +9,7 @@ import sys
 import json
 from getpass import getpass
 
-
+# Alex edit 06-03-2020
 
 def create_certificate():
     print("Creating a Bitcoin SV SSL certificate..")
