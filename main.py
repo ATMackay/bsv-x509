@@ -64,11 +64,23 @@ def create_certificate():
     print("\n\nTransaction ID:" + str(txid))
     time.sleep(2)
     print("\n\nChecking WhatsonChain...")
+    time.sleep(5)
     tx_list = my_key.get_transactions()
-    if txid in tx_list:
-        print("Transaction confirmed...")
-    else:
-        print("Transaction unconfirmed, retrying...")
+    limit = 5
+    for i in range(limit):
+        if txid  not in tx_list:
+            if i >= limit - 1:
+                print("Transaction unconfirmed after "+str(limit)" attempts, aborting...")
+                print("\nManually check for transaction on https://www.whatsonchain.com")
+                print("\nTransaction ID: ", txid)
+                
+            else:
+                print("Transaction unconfirmed, retrying in 5 seconds...")
+                time.sleep(5)
+                tx_list = my_key.get_transactions()
+        else:
+            print("Transaction confirmed...")
+            break
         
 
 # e1f250f0d1f95bc6a9874216604bb19b8805343b55752616647d4df11c8f710d
