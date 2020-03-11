@@ -15,10 +15,9 @@ If not, DO NOT EXECUTE the  main program.
 
 root_data = {
     "root certificate" : "5a743f68a759bda8fecfc4aab4af4d8e75e300d2c880ebbef25abbd21680eaec", 
-    "root certificate vout" : 0
-    "root key" : '03784c9066b6afd1baa83d7391126b073f539131d67c8ef932b54f4236ace5e289'
-    "intermediate certificate" : "5a743f68a759bda8fecfc4aab4af4d8e75e300d2c880ebbef25abbd21680eaec"
-    "intermediate vout" : 0 
+    "root certificate vout" : 0,
+    "root key" : '03784c9066b6afd1baa83d7391126b073f539131d67c8ef932b54f4236ace5e289',
+    "intermediate certificate" : "5a743f68a759bda8fecfc4aab4af4d8e75e300d2c880ebbef25abbd21680eaec",
+    "intermediate vout" : 0, 
     "intermediate key" : '03784c9066b6afd1baa83d7391126b073f539131d67c8ef932b54f4236ace5e289'
-
 }
