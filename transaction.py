@@ -1,22 +1,58 @@
 # This programme contains tools for generating raw transactions and extracting transaction field data
 import bitsv
-import bitsv
 import libsecp256k1
 import x509_builder
-import network
 import json
+import requests as req
+import sys
 import hashlib
 import binascii
 
 
 
+def retrieve_tx(txid):
+    if type(txid) != str or len(txid) > 64:
+        raise Exception("input txid not formatted correctly!. txid must be a string of length 64.")
+    # Gets transaction data from WhatsOnChain
+    request_url = req.get("https://api.whatsonchain.com/v1/bsv/main/tx/hash/"+str(txid))
+    request_json = json.loads(request_url.text)
+    return request_json
 
-def generate_raw_tx(data, recipient, key):
-    # Inputs are data payload, recipient address and signing key    
-    # Generates raw transation using moneybutton API
-    # Returns a JSON object 
-    raw_tx = tx.json()
-    return raw_tx
+def extract_nulldata(txid, v_out):
+    v_out = int(v_out)
+    if type(txid) != str or len(txid) > 64:
+        raise Exception("input txid not formatted correctly!. txid must be a string of length 64.")
+    if type(v_out) != int or v_out > 2**32:
+        raise Exception("input vout not formatted correctly!. txid must be a string of length 64.")
+    target_tx = retrieve_tx(txid)
+    target_data_list = target_tx.get('vout')[v_out]
+    if sys.getsizeof(target_data_list) > tx_out_size_limit:
+        raise Exception("Tx too large to parse.")
+
+    target_opreturn = target_data_list.get('scriptPubKey').get('hex')
+    # Check that output is a valid OP_RETURN or OP_FALSE OP_RETURN
+    if target_opreturn[0:4] == '006a':
+        return target_opreturn[4:]
+    elif target_opreturn[0:2] == '6a':
+        return target_opreturn[2:]
+    else:
+        raise Exception("Not a valid data outpoint")
+
+def check_opreturn_prefix(opreturn):
+    # Check if OP_RETURN  uses the CA prefix
+    # will pass if prefix is used or not, however the certificate viewer may return an error 
+    if opreturn[2:10] == str(x509_builder.ca_prefix) or opreturn[4:12] == str(x509_builder.ca_prefix) :
+        return True
+    else:
+        print("Warning: Incorrect protocol identifier. Certificate may not be viewable.")
+        return True
+
+def get_certificate(opret):
+    """
+    This function takes the opreturn bytes from a transaction and 
+    returns json formatted certificate.
+    """
+    return True
    
 
 def get_pubkeys(txid):
@@ -34,29 +70,14 @@ def get_pubkeys(txid):
 def check_pubkeys(txid):
     ca_key_list = []
     pubkeys = get_pubkeys(txid)
-    # Import key list 
+    # Import key list from secure file
     # Check list against hash (hard coded)
     return True
 
-#!!!!!!!!!!!!!!!!!!!! Redundant, use bitsv
-def generate_opreturn(cert):
-    # Takes JSON formatted certificate and generates OP_RETURN payload
-    # This function may be redundant
-    if len(cert) == 13:
-        return x509_builder.hex_encode(cert)
-    elif len(cert) == 7:
-        return x509_builder.hex_encode_root(cert)
-    else:
-        raise Exception("Certificate not formatted correctly!")
 
 
-def decode_opreturn(opreturn):
-    # Check if output is valid CA opreturn
-    if opreturn[0:8] != str(ca_prefix):
-        hex_cert = opreturn[10:]
-        return x509_builder.hex_to_string(hex_cert)
-    else:
-        raise Exception("Not a certificate transaction.")
+
+
 
 
 
