@@ -10,7 +10,7 @@ import libsecp256k1
 import transaction
 
 #Hard coded variables
-ca_prefix = '424430a'
+ca_prefix = 'CERT'
 
 class cert(object):
     def __init__(self, person_name, device_type, company, pubkey):
@@ -32,19 +32,19 @@ class cert(object):
         # Validity period 
         self.not_before = time.time()
         self.not_after = time.time() + 7776000 # Time + 90 days
-
         # Root CA
         self.root_ca = "CT-AM Certificates"
         self.root_not_after = time.time() + 630700000 # Time + 20 years
         self.root_key = '033b8143795af7ff119608282fe496ed5e7bbd87eecf43200e41892ba4088a00b'
-
+        # Policy (intermediate) CA
+        self.int_ca = "CT-AM Certificates"
+        self.int_not_after = time.time() + 157680000 # Time + 5 years
+        self.int_key = '033b8143795af7ff119608282fe496ed5e7bbd87eecf43200e41892ba4088a00b'
         # Subject Key info
         self.pubkey = pubkey
-
         #Field format size
         self.f_format  = [4, 8, 32, 64, 4, 64, 4, 32, 18, 18, 66, 8, 8] 
         self.f_format_root  = [4, 8, 32, 18, 18, 66, 8] 
-
         # Input variables
         self.person_name = person_name
         self.device_type = device_type
@@ -56,10 +56,8 @@ class cert(object):
             raise Exception("Name must be a string of up to 32 characters!")  
         if type(self.device_type)!= str or len(self.device_type) > 32:
             raise Exception("Device type must be a string of up to 32 characters!")
-        # Pad entries with 0 to format  
-        self.person_name = self.person_name.zfill(32)
-        self.device_type = self.device_type.zfill(32)
-        preimg = self.person_name + self.device_type
+        # Pad entries with 0 to format   
+        preimg = self.person_name.zfill(32) + self.device_type.zfill(32)
         return hashlib.sha256(preimg.encode()).hexdigest()[0:8]
 
     def user_id(self):
@@ -71,8 +69,9 @@ class cert(object):
         preimg = self.person_name.zfill(32) + self.company.zfill(64)
         return hashlib.sha256(preimg.encode()).hexdigest()[0:8]
 
-    # Certificate functions
-        
+    """
+    Certificate generator functions.
+    """
 
     def generate(self):
         # generates an array object containing certificate entries with labels 
@@ -104,13 +103,12 @@ class cert(object):
         certificate.append('Subject device id: '+str(device_id))
         certificate.append('Subject unique id: '+str(unique_id))
 
-
         return certificate
 
 
 
     def generate_root(self):
-        # Clean up 
+        # Generate root certificate 
         root_id = cert.user_id(self.root_ca, self.root_ca)
         certificate = list()
         certificate.append('Version number: '+str(self.version))
@@ -118,13 +116,29 @@ class cert(object):
         certificate.append('Issuer: '+str(self.issuer))
         certificate.append('Validity period start: '+str(self.not_before))
         certificate.append('Validity period finish: '+str(self.root_not_after))
-        certificate.append('CA Root public key: '+str(self.root_key))
-        certificate.append('CA unique id: '+str(self.root_id))
+        certificate.append('Root CA public key: '+str(self.root_key))
+        certificate.append('Root CA unique id: '+str(self.root_id))
 
         return certificate
-       
 
-    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    def generate_int(self):
+        #Generate intemediate certificate
+        policy_id = cert.user_id(self.policy_ca, self.policy_ca)
+        certificate = list()
+        certificate.append('Version number: '+str(self.version))
+        certificate.append('Serial number: '+str(self.serial))
+        certificate.append('Issuer: '+ str(self.issuer))
+        certificate.append('Validity period start: '+str(self.not_before))
+        certificate.append('Validity period finish: '+str(self.int_not_after))
+        certificate.append('Policy CA public key: '+str(self.int_key))
+        certificate.append('Policy CA unique id: '+str(self.policy_id))
+
+        return certificate
+
+    """
+    Certificate viewing functions.
+    """
+       
     def get_size(self, _cert):
         # returns memory size of certificate in bytes
         return sys.getsizeof(_cert)
@@ -134,69 +148,6 @@ class cert(object):
         if len(_cert) > 13:
             raise Exception('input must be an array of length 12 containing strings.')
         return json.dumps(_cert, indent = 4)
-
-
-
-
-
-
-"""
-def root_cert_data(root_ca):
-    # generates an array object containing root certificate entries
-    if type(root_ca) != str or sys.getsizeof(root_ca) > 128*8:
-        raise Exception("Subject name must be a string object up to 128 bytes!")
-
-    
-
-    certificate_data = list()
-    certificate_data.append(version)
-    certificate_data.append(serial)
-    certificate_data.append(root_ca)
-    certificate_data.append(not_before)
-    certificate_data.append(root_not_after)
-    certificate_data.append(root_key)
-    certificate_data.append(root_id)
-
-    return certificate_data
-
-    #!!!!!!!!!!!!!!!!! Need to fix encoding utf-8
-    def hex_encode(self, _cert):
-        # JSON object to hex 
-        prefix = transaction.ca_prefix
-        serialized_obj = prefix
-        for i in range(len(self.cert)):
-            serialized_obj += str(cert_[i]).zfill(f_format[i])
-        # ASCII conversion
-        return serialized_obj.encode('utf-8') #binascii.hexlify(serialized_obj.encode())
-
-    def hex_encode_root(self cert_):
-        # JSON object to hex 
-        prefix = transaction.ca_prefix
-        serialized_obj = prefix
-        for i in range(len(cert_)):
-            serialized_obj += str(cert_[i]).zfill(f_format_root[i])
-        # ASCII conversion
-        return binascii.hexlify(serialized_obj.encode())
-
-    def hex_to_string(hex_cert):
-        # Input formatted Hex encoded certificate
-        # Outout a json object containing certificate
-        # CERTIFICATE NEEDS TO BE ENCODED CORRECTLY 
-        decode = binascii.unhexlify(hex_cert)
-        return decode
-
-    def bytes_to_ascii(byt):
-        # input bytes
-        # output ascii text
-        string = ''
-        loop_num = len(byt)//45
-        for i in range(loop_num):
-            string += str(binascii.b2a_hex(byt[45*i:45*(i+1)]))
-        return string 
-
-"""
-
-
 
 
 
