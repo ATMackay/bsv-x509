@@ -19,6 +19,7 @@ def retrieve_tx(txid):
     return request_json
 
 def extract_certificate(txid, v_out):
+    tx_out_size_limit = 10000
     """
     Extracts OP_RETURN data and creates Python list/dict containing field values that can be accessed.
     """
@@ -33,18 +34,13 @@ def extract_certificate(txid, v_out):
         raise Exception("Tx too large to parse.")
 
     target_opreturn = target_data_list.get('scriptPubKey').get('opReturn').get('parts')
-    # Check that output is a valid OP_RETURN or OP_FALSE OP_RETURN
-    if target_opreturn[0:4] == '006a':
-        return json.loads(target_opreturn[1])
-    elif target_opreturn[0:2] == '6a':
-        return json.loads(target_opreturn[1])
-    else:
-        raise Exception("Not a valid data outpoint.")
+    return json.loads(target_opreturn[1])
+
 
 def check_opreturn_prefix(opreturn):
     # Check if OP_RETURN  uses the CA prefix
     # will pass if prefix is used or not, however the certificate viewer may return an error 
-    if opreturn[0] == str(x509_builder.ca_prefix) or opreturn[0] == str(x509_builder.ca_prefix) :
+    if opreturn[0] == str(x509_builder.ca_prefix):
         return True
     else:
         print("Warning: Incorrect protocol identifier. Certificate may not be viewable.")
@@ -54,7 +50,7 @@ def check_opreturn_prefix(opreturn):
 
 def get_pubkeys(txid):
     # Extracts the public keys used to sign validate transaction signature for txid
-    target_tx_inputs = network.retrieve_tx(txid).get('vin')
+    target_tx_inputs = retrieve_tx(txid).get('vin')
     num_inputs = len(target_tx_inputs)
     key_list = dict()
     for i in range(num_inputs):
@@ -64,13 +60,6 @@ def get_pubkeys(txid):
         if key_list.get(i)[0:2] != '02' and key_list.get(i)[0:2] != '03':
             raise Exception("Error: Inputs must be P2PKH.")
     return key_list
-
-def check_pubkeys(txid):
-    ca_key_list = []
-    pubkeys = get_pubkeys(txid)
-    # Import key list from secure file
-    # Check list against hash (hard coded)
-    return True
 
 
 
