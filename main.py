@@ -22,7 +22,7 @@ def create_certificate():
     subject_company = input()
     print("\nEnter Subject device type:")
     device_type = input()
-    #libsecp256k1.passwd()
+    libsecp256k1.passwd()
     # Instantiate certificate class
     certificate = x509_builder.cert(subject_name, subject_company, device_type, sub_key)
     certificate_template = certificate.generate()
@@ -42,8 +42,6 @@ def create_certificate():
     print("Do you wish to sign with issuing key? [Y/N]")
     input3 = input()
     if input3 == 'y' or input3 == 'Y':
-        # Decrypt_wallet
-        # Extract issuing key
         # Create transaction paying from and to issuing key containing OP_RETURN
         my_key = keys.my_key #Insecure
         print(keys.my_unspents)
@@ -57,8 +55,8 @@ def create_certificate():
     print("\nWarning: The data you publish to the Bitcoin SV blockchain is immutable. Once broadcast it will remain there forever.")
     libsecp256k1.passwd()
     print("\n\nBroadcasting to the Bitcoin SV network...")
-    # network.braodcast(raw_tx) --> get response TRANSACTION ID
-    # Check that network has seen transaction 
+    # network.broadcast(raw_tx) --> get response TRANSACTION ID
+    # Check that the network has seen the transaction 
     txid = my_key.send_op_return(payload)
     time.sleep(1)
     print("\n\nTransaction ID:" + str(txid))
@@ -83,8 +81,6 @@ def create_certificate():
             break
         
 
-# e1f250f0d1f95bc6a9874216604bb19b8805343b55752616647d4df11c8f710d
-
 def validate_certificate():
     print("Enter certificate TXID")
     cert_txid = input()
@@ -95,29 +91,35 @@ def validate_certificate():
     print(cert_tx)
     print("\n\nExtracting OP_RETURN...")
     time.sleep(2)
-    #Dummy for PoC
-    cert_data = transaction.extract_nulldata(cert_txid, cert_vout)
-    certificate_bytes = transaction.decode_opreturn(cert_data)
-    print("\n", certificate_bytes)
-    # Need to convert OP_RETURN data to string
-    # Still need to clear up the encoding and decoding path
-    print("\n\nValidating chain of trust")
+    cert_data = transaction.extract_certificate(cert_txid, cert_vout)
+    print("\n", cert_data)
+    time.sleep(1)    
+    print("\nCertified Key: ", cert_data["Subject public key"])
+    print("\n\nValidating chain of trust..")
     time.sleep(1)
     # Get public keys
     print("\n\nValidating issuer key...") 
+    sign_key = transaction.get_pubkeys(cert_txid)
     print(transaction.get_pubkeys(cert_txid))
-    time.sleep(1)
-    print("Issuer certificate is valid.")
+    if root_data.root_data["intermediate address"] not in sign_key:
+        print("\n Invalid issuing key... Aborting.")
+        time.sleep(1)
+        quit()
+    else:
+        time.sleep(1)
+        print("Issuer certificate is valid.")
     # Validate public keys 
     print("\n\nExtracting intermediate certificate...")
-    intermed_txid = test.ex1_int_txid  #cert_data[3]
-    #intermed_vout = cert_data[4]
-    # Print intermediate certificate 
-    print("\n\nValidating policy key...") 
-    print(transaction.get_pubkeys(intermed_txid))
-    time.sleep(1)
-    print("Policy certificate is valid.")
-    # Get public keys --> print(transaction.get_pubkeys(cert_data[3]))
+    intermed_txid = certificate_bytes 
+    inter_key = transaction.get_pubkeys(intermed_txid)
+    print(inter_key)
+    if root_data.root_data["intermediate address"] not in inter_key:
+        print("\n Invalid ploicy key... aborting.")
+        time.sleep(1)
+        quit()
+    else:
+        time.sleep(1)
+        print("Policy certificate is valid.")
     time.sleep(1)
     print("\n\nExtracting root certificate...")
     root_txid = test.ex2_root_txid  #cert_data[5]
@@ -135,10 +137,10 @@ def validate_certificate():
 
 
 def main():
-    print("\nWelcome to CT-AM SSL, certificate software powered by Bitcoin SV.\n\n \
+    print("\nCT-AM SSL, certificate software powered by Bitcoin SV.\n\n \
             Please Enter Password:")
-    #libsecp256k1.passwd()
-    print("\nPress (1) to create a new certificate, or \n         press (2) to validate a BSV SSL certificate.\n \
+    libsecp256k1.passwd()
+    print("\nPress (1) to create a new certificate, or \n       press (2) to validate a BSV SSL certificate.\n \
             Press any other key to exit.")
     value1 = input()
     if value1 == '1':
