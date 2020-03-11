@@ -16,7 +16,7 @@ Linux:
         
         ~/$PATH/bsv-x509 sha512sum root_data.py
 
-        The return value should equal --> cb7cb89ffd9a878c325f1f5b64e93788c44d7491f686ce1c70d49d2f101b50e2ddc095ed08cfc594129437843d62460cec4e1121f8b385cf2caf5629d6dcf053 root_data.py
+        The return value should equal --> 7726cad0b4aa63d285cf6038d7220e10ba5d7f1737c4ffbf0d2bda79e44d6e5df822d818892fed8aa91bb412919eeedb04739cff1f8d58a65e5a7f7e06edc2bc  root_data.py
 
         If the fingerprint values do not match DO NOT EXECUTE the main program
 
