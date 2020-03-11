@@ -9,7 +9,7 @@ import sys
 import json
 from getpass import getpass
 
-# Alex edit 06-03-2020
+
 
 def create_certificate():
     print("Creating a Bitcoin SV SSL certificate..")
@@ -34,7 +34,7 @@ def create_certificate():
     time.sleep(1)
     if input2 == 'y' or input2 == 'Y':
         # Needs to be a JSON string
-        payload =  [x509_builder.ca_prefix.encode('utf-8'), format_cert.encode('utf-8')]#!!!!!!!!!!!!!!!!!!!!! FIX
+        payload =  [x509_builder.ca_prefix.encode('utf-8'), format_cert.encode('utf-8')]
         print("\n\nCertificate (Hex):", payload)
     else:
         print("Terminating....")
@@ -70,7 +70,7 @@ def create_certificate():
     for i in range(limit):
         if txid  not in tx_list:
             if i >= limit - 1:
-                print("Transaction unconfirmed after "+str(limit)" attempts, aborting...")
+                print("Transaction unconfirmed after "+str(limit)+" attempts, aborting...")
                 print("\nManually check for transaction on https://www.whatsonchain.com")
                 print("\nTransaction ID: ", txid)
                 
@@ -91,12 +91,12 @@ def validate_certificate():
     print("Enter certificate VOUT")
     cert_vout = input()
     # Get certificate
-    cert_tx = network.retrieve_tx(cert_txid)
+    cert_tx = transaction.retrieve_tx(cert_txid)
     print(cert_tx)
     print("\n\nExtracting OP_RETURN...")
     time.sleep(2)
     #Dummy for PoC
-    cert_data = network.extract_nulldata(cert_txid, cert_vout)
+    cert_data = transaction.extract_nulldata(cert_txid, cert_vout)
     certificate_bytes = transaction.decode_opreturn(cert_data)
     print("\n", certificate_bytes)
     # Need to convert OP_RETURN data to string
