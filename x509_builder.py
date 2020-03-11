@@ -24,10 +24,10 @@ class cert(object):
         # Certificate issuer 
         self.issuer = "CT-AM Certificates"
         # Root certificate location
-        self.root_loc = '5a743f68a759bda8fecfc4aab4af4d8e75e300d2c880ebbef25abbd21680eaec'
+        self.root_loc = '84f6ff602f81e4d7980112d260a1917fd3200f454daf92e4c1abe67971c44eac'
         self.root_vout = 0 
         # Intermediate certificate location
-        self.int_cert_loc = '17a8b9994f1e89855b34660ea1d17061ae65833f1ded395c4c6a72d2d98832a6'
+        self.int_cert_loc = '930382cc6584529701b9aa3c9540cbf7b756292c565dd0d233fb5f31f31af56e'
         self.int_cert_vout = 0 
         # Validity period 
         self.not_before = time.time()
@@ -35,11 +35,11 @@ class cert(object):
         # Root CA
         self.root_ca = "CT-AM Certificates"
         self.root_not_after = time.time() + 630700000 # Time + 20 years
-        self.root_key = '033b8143795af7ff119608282fe496ed5e7bbd87eecf43200e41892ba4088a00b'
+        self.root_key = '03784c9066b6afd1baa83d7391126b073f539131d67c8ef932b54f4236ace5e289'
         # Policy (intermediate) CA
         self.int_ca = "CT-AM Certificates"
         self.int_not_after = time.time() + 157680000 # Time + 5 years
-        self.int_key = '033b8143795af7ff119608282fe496ed5e7bbd87eecf43200e41892ba4088a00b'
+        self.int_key = '03784c9066b6afd1baa83d7391126b073f539131d67c8ef932b54f4236ace5e289'
         # Subject Key info
         self.pubkey = pubkey
         #Field format size
@@ -73,6 +73,7 @@ class cert(object):
     Certificate generator functions.
     """
 
+    # CHANGE FROM LIST TO DICT!!!!!
     def generate(self):
         # generates an array object containing certificate entries with labels 
         if type(self.person_name) != str or sys.getsizeof(self.person_name) > 128*8:
@@ -88,20 +89,20 @@ class cert(object):
         device_id = cert.gen_device_id(self)
         unique_id = cert.user_id(self)
 
-        certificate = list()
-        certificate.append('Version number: '+str(self.version))
-        certificate.append('Serial number: '+str(self.serial))
-        certificate.append('Issuer: '+str(self.issuer))
-        certificate.append('Root certificate txid: '+str(self.root_loc))
-        certificate.append('Root certificate vout: '+str(self.root_vout))
-        certificate.append('Intermediate certificate txid: '+str(self.int_cert_loc))
-        certificate.append('Intermediate certificate vout: '+str(self.int_cert_vout))
-        certificate.append('Validity period start: '+str(self.not_before))
-        certificate.append('Validity period finish: '+str(self.not_after))
-        certificate.append('Subject name: '+str(self.person_name))
-        certificate.append('Subject public key: '+str(self.pubkey))
-        certificate.append('Subject device id: '+str(device_id))
-        certificate.append('Subject unique id: '+str(unique_id))
+        certificate = dict()
+        certificate["Version number"] = str(self.version) # !!!!!!!!!!
+        certificate["Serial number"] = str(self.serial)
+        certificate["Issuer"] = str(self.issuer)
+        certificate["Root certificate txid"] = str(self.root_loc)
+        certificate["Root certificate vout"] = str(self.root_vout)
+        certificate["Intermediate certificate txid"] = str(self.int_cert_loc)
+        certificate["Intermediate certificate vout"] = self.int_cert_vout
+        certificate["Validity period start"] = str(self.not_before)
+        certificate["Validity period finish"] = str(self.not_after)
+        certificate["Subject name"] = str(self.person_name)
+        certificate["Subject public key"] = str(self.pubkey)
+        certificate["Subject device id"] = str(device_id)
+        certificate["Subject unique id"] = str(unique_id)
 
         return certificate
 
@@ -110,28 +111,28 @@ class cert(object):
     def generate_root(self):
         # Generate root certificate 
         root_id = cert.user_id(self.root_ca, self.root_ca)
-        certificate = list()
-        certificate.append('Version number: '+str(self.version))
-        certificate.append('Serial number: '+str(self.serial))
-        certificate.append('Issuer: '+str(self.issuer))
-        certificate.append('Validity period start: '+str(self.not_before))
-        certificate.append('Validity period finish: '+str(self.root_not_after))
-        certificate.append('Root CA public key: '+str(self.root_key))
-        certificate.append('Root CA unique id: '+str(self.root_id))
+        certificate = dict()
+        certificate["Version number"] = str(self.version)
+        certificate["Serial number"] = str(self.serial)
+        certificate["Issuer"] = str(self.issuer)
+        certificate["Validity period start"] = str(self.not_before)
+        certificate["Validity period finish"] = str(self.root_not_after)
+        certificate["Root CA public key"] = str(self.root_key)
+        certificate[" Root CA unique id"] = str(self.root_id)
 
         return certificate
 
     def generate_int(self):
         #Generate intemediate certificate
         policy_id = cert.user_id(self.policy_ca, self.policy_ca)
-        certificate = list()
-        certificate.append('Version number: '+str(self.version))
-        certificate.append('Serial number: '+str(self.serial))
-        certificate.append('Issuer: '+ str(self.issuer))
-        certificate.append('Validity period start: '+str(self.not_before))
-        certificate.append('Validity period finish: '+str(self.int_not_after))
-        certificate.append('Policy CA public key: '+str(self.int_key))
-        certificate.append('Policy CA unique id: '+str(self.policy_id))
+        certificate = dict()
+        certificate["Version number"] = str(self.version)
+        certificate["Serial number"] = str(self.serial)
+        certificate["Issuer"] = str(self.issuer)
+        certificate["Validity period start"] = str(self.not_before)
+        certificate["Validity period finish"] = str(self.int_not_after)
+        certificate["Policy CA public key"] = str(self.int_key)
+        certificate["Policy CA unique id"] = str(self.policy_id)
 
         return certificate
 

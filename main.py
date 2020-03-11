@@ -3,7 +3,6 @@ import libsecp256k1
 import x509_builder
 import network 
 import transaction
-import test
 import time
 import sys
 import json
@@ -110,11 +109,11 @@ def validate_certificate():
         print("Issuer certificate is valid.")
     # Validate public keys 
     print("\n\nExtracting intermediate certificate...")
-    intermed_txid = certificate_bytes 
-    inter_key = transaction.get_pubkeys(intermed_txid)
-    print(inter_key)
-    if root_data.root_data["intermediate address"] not in inter_key:
-        print("\n Invalid ploicy key... aborting.")
+    intermed_txid = cert_data["Intermediate certificate txid"] 
+    inter_keys = transaction.get_pubkeys(intermed_txid)
+    print("Policy Key: ", inter_key)
+    if root_data.root_data["intermediate address"] not in inter_keys:
+        print("\n Invalid policy key... aborting.")
         time.sleep(1)
         quit()
     else:
@@ -122,18 +121,19 @@ def validate_certificate():
         print("Policy certificate is valid.")
     time.sleep(1)
     print("\n\nExtracting root certificate...")
-    root_txid = test.ex2_root_txid  #cert_data[5]
-    #root_vout = cert_data[6]
-    print("\n\nValidating root key...") 
-    print(transaction.get_pubkeys(root_txid))
+    root_txid = cert_data["Root certificate txid"] 
+    root_keys = transaction.get_pubkeys(root_txid)
+    print("Root key: ", root_key)
+    if root_data.root_data["root address"] not in root_keys:
+        print("\n Invalid root key... aborting.")
+        time.sleep(1)
+        quit()
+    else:
+        time.sleep(1)
+        print("Root certificate is valid.")
     time.sleep(1)
-    print("Root certificate is valid.")
-    time.sleep(1)
-    print("\n\nAuthentication successful.")
+    print("\n\n Authentication successful.")
     #if keys valid then authentication success else fail 
-
-
-
 
 
 def main():
@@ -152,7 +152,7 @@ def main():
         time.sleep(2)
         quit()
 
-if __name__=="__main__":       
+if __name__ == "__main__":       
     main()
         
 
