@@ -10,11 +10,19 @@ Linux:
 
     1) Go the the bsv-x509 directory
 
-        $~/$PATH/bsv-x509
+        ~/$PATH/bsv-x509
 
-    2) To execute the certificate viewer run the main.py file 
+    2)  Verify SHA512 fingerprint of the root data file
+        
+        ~/$PATH/bsv-x509 sha512sum root_data.py
 
-        $~/$PATH/bsv-x509 python3 main.py
+        The return value should equal --> cb7cb89ffd9a878c325f1f5b64e93788c44d7491f686ce1c70d49d2f101b50e2ddc095ed08cfc594129437843d62460cec4e1121f8b385cf2caf5629d6dcf053 root_data.py
+
+        If the fingerprint values do not match DO NOT EXECUTE the main program
+
+    3)  To execute the certificate viewer run the main.py file 
+
+        ~/$PATH/bsv-x509 python3 main.py
 
     3) Follow instructions to create or validate digital certificates on the BSV blockchain
 
