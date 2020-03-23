@@ -1,9 +1,13 @@
+<<<<<<< HEAD
 import bitsv
+=======
+import keys
+import root_data
+>>>>>>> dev
 import libsecp256k1
 import x509_builder
 import network 
 import transaction
-import test
 import time
 import sys
 import json
@@ -29,10 +33,13 @@ def create_certificate():
     time.sleep(1)
     print("\nEnter Subject name:")
     subject_name = input()
+    sub_key = keys.my_address #Example. change to input user key
+    print("\nSubject Public Key:", sub_key)
     print("\nEnter Subject company:")
     subject_company = input()
     print("\nEnter Subject device type:")
     device_type = input()
+<<<<<<< HEAD
     device_ID = x509_builder.gen_device_id(subject_name, device_type)
     user_ID = x509_builder.user_id(subject_name, subject_company)
     print("\nEnter Issuer Username:")
@@ -44,20 +51,29 @@ def create_certificate():
     certificate_template = x509_builder.generate(certificate_data)
     format_cert = x509_builder.json_format(certificate_template)
     print("################## CERTIFICATE ##################")
+=======
+    libsecp256k1.passwd()
+    # Instantiate certificate class
+    certificate = x509_builder.cert(subject_name, subject_company, device_type, sub_key)
+    certificate_template = certificate.generate()
+    format_cert = certificate.json_format(certificate_template)
+    print("######################## CERTIFICATE ######################")
+>>>>>>> dev
     print(format_cert)
     print("Do you wish to procceed [Y/N]?")
     input2 = input()
     time.sleep(1)
     if input2 == 'y' or input2 == 'Y':
-        payload = transaction.generate_opreturn(certificate_data)
+        # Needs to be a JSON string
+        payload =  [x509_builder.ca_prefix.encode('utf-8'), format_cert.encode('utf-8')]
         print("\n\nCertificate (Hex):", payload)
     else:
         print("Terminating....")
         time.sleep(2)
-        quit()
     print("Do you wish to sign with issuing key? [Y/N]")
     input3 = input()
     if input3 == 'y' or input3 == 'Y':
+<<<<<<< HEAD
         print("################## CERTIFICATE TRANSACTION (RAW) ##################")
         # transaction.generate_raw_tx(payload, issue_key, issue_key)
         # Dummy TX for PoC
@@ -69,19 +85,56 @@ def create_certificate():
                      +'f3edff034600055b8467f0040'
         dumm_spk =   'ffffffff01247e814a000000001976' +'914492558fb8ca71a3591316d095afc0f20ef7d42f788ac00000000'
         print(dumm_prefix + serialized +  str(payload)[2:len(str(payload))-1] + dumm_spk )
+=======
+        # Create transaction paying from and to issuing key containing OP_RETURN
+        my_key = keys.my_key #Insecure
+        print(keys.my_unspents)
+        print(keys.my_transactions)
+        raw_tx = my_key.create_op_return_tx(payload)
+        print(raw_tx)
+>>>>>>> dev
         # This need to be re-written
     else:gi
         print("Terminating....")
         time.sleep(2)
-        quit()
     print("\nWarning: The data you publish to the Bitcoin SV blockchain is immutable. Once broadcast it will remain there forever.")
+<<<<<<< HEAD
     passwd()
+=======
+    libsecp256k1.passwd()
+>>>>>>> dev
     print("\n\nBroadcasting to the Bitcoin SV network...")
-    # network.braodcast(raw_tx) --> get response TRANSACTION ID
+    # network.broadcast(raw_tx) --> get response TRANSACTION ID
+    # Check that the network has seen the transaction 
+    txid = my_key.send_op_return(payload)
+    time.sleep(1)
+    print("\n\nTransaction ID:" + str(txid))
     time.sleep(2)
+<<<<<<< HEAD
     print("\n\nTransaction ID:" + str(test.tx_id0))
     #print("\n\nTransaction ID:"+str(TRANSACTION ID))
 
+=======
+    print("\n\nChecking WhatsonChain...")
+    time.sleep(5)
+    tx_list = my_key.get_transactions()
+    limit = 5
+    for i in range(limit):
+        if txid  not in tx_list:
+            if i >= limit - 1:
+                print("Transaction unconfirmed after "+str(limit)+" attempts, aborting...")
+                print("\nManually check for transaction on https://www.whatsonchain.com")
+                print("\nTransaction ID: ", txid)
+                
+            else:
+                print("Transaction unconfirmed, retrying in 5 seconds...")
+                time.sleep(5)
+                tx_list = my_key.get_transactions()
+        else:
+            print("Transaction confirmed...")
+            break
+        
+>>>>>>> dev
 
 def validate_certificate():
     print("Enter certificate TXID")
@@ -89,53 +142,63 @@ def validate_certificate():
     print("Enter certificate VOUT")
     cert_vout = input()
     # Get certificate
-    cert_tx = network.retrieve_tx(cert_txid)
+    cert_tx = transaction.retrieve_tx(cert_txid)
     print(cert_tx)
     print("\n\nExtracting OP_RETURN...")
     time.sleep(2)
-    #Dummy for PoC
-    cert_data = network.extract_nulldata(cert_txid, cert_vout)
-    certificate_bytes = transaction.decode_opreturn(cert_data)
-    print("\n", certificate_bytes)
-    # Need to convert OP_RETURN data to string
-    # Still need to clear up the encoding and decoding path
-    print("\n\nValidating chain of trust")
+    cert_data = transaction.extract_certificate(cert_txid, cert_vout)
+    print("\n", cert_data)
+    time.sleep(1)    
+    print("\nCertified Key: ", cert_data["Subject public key"])
+    print("\n\nValidating chain of trust..")
     time.sleep(1)
     # Get public keys
     print("\n\nValidating issuer key...") 
-    print(transaction.get_pubkeys(cert_txid))
-    time.sleep(1)
-    print("Issuer certificate is valid.")
+    sign_keys = transaction.get_pubkeys(cert_txid)
+    print("Signing Key:", sign_keys[0])
+    if root_data.root_data["intermediate key"] not in sign_keys.values():
+        print("\n Invalid issuing key... aborting.")
+        time.sleep(1)
+        quit()
+    else:
+        time.sleep(1)
+        print("Issuer certificate is valid.")
     # Validate public keys 
     print("\n\nExtracting intermediate certificate...")
-    intermed_txid = test.ex1_int_txid  #cert_data[3]
-    #intermed_vout = cert_data[4]
-    # Print intermediate certificate 
-    print("\n\nValidating policy key...") 
-    print(transaction.get_pubkeys(intermed_txid))
-    time.sleep(1)
-    print("Policy certificate is valid.")
-    # Get public keys --> print(transaction.get_pubkeys(cert_data[3]))
+    intermed_txid = cert_data["Intermediate certificate txid"] 
+    inter_keys = transaction.get_pubkeys(intermed_txid)
+    print("Policy Key: ", inter_keys[0])
+    if root_data.root_data["root key"] not in inter_keys.values():
+        print("\n Invalid policy key... aborting.")
+        time.sleep(1)
+        quit()
+    else:
+        time.sleep(1)
+        print("Policy certificate is valid.")
     time.sleep(1)
     print("\n\nExtracting root certificate...")
-    root_txid = test.ex2_root_txid  #cert_data[5]
-    #root_vout = cert_data[6]
-    print("\n\nValidating root key...") 
-    print(transaction.get_pubkeys(root_txid))
+    root_txid = cert_data["Root certificate txid"] 
+    root_keys = transaction.get_pubkeys(root_txid)
+    print("Root key: ", root_keys[0])
+    # Self-signed root key
+    if root_data.root_data["root key"] not in root_keys.values():
+        print("\n Invalid root key... aborting.")
+        time.sleep(1)
+        quit()
+    else:
+        time.sleep(1)
+        print("Root certificate is valid.")
     time.sleep(1)
-    print("Root certificate is valid.")
-    time.sleep(1)
-    print("\n\nAuthentication successful.")
+    print("\n\n Authentication successful.")
     #if keys valid then authentication success else fail 
 
 
-
-
-
 def main():
-    print("\nWelcome to CT-AM SSL, certificate software powered by Bitcoin SV.\n\n \
-        Press (1) to create a new certificate, or \n         press (2) to validate a BSV SSL certificate.\n \
-        Press any other key to exit.")
+    print("\nCT-AM SSL, certificate software powered by Bitcoin SV.\n\n \
+            Please Enter Password:")
+    #libsecp256k1.passwd()
+    print("\nPress (1) to create a new certificate, or \nPress (2) to validate a BSV SSL certificate.\n \
+            Press any other key to exit.")
     value1 = input()
     if value1 == '1':
         create_certificate()
@@ -146,7 +209,7 @@ def main():
         time.sleep(2)
         quit()
 
-if __name__=="__main__":       
+if __name__ == "__main__":       
     main()
         
 

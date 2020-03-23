@@ -24,6 +24,19 @@ base58_count = len(alphabet_58)
 alphabet_64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 base64_count = len(alphabet_64)
 
+def passwd():
+    i = 0
+    while i < 4:
+        pass_attempt = getpass()
+        if password_check(pass_attempt) != True:
+            if i > 2:
+                print("\nPassword authentication failed. Aborting....")  
+                quit()            
+            print("\nPassword attempt failed. You have "+str(3-i)+" remaining attempts.")
+            i += 1
+        else:
+            break
+
 def password_check(password_attempt):
     if type(password_attempt) != str:
         raise Exception("password input must be a string!")

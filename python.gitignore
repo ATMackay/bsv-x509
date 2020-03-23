@@ -15,3 +15,6 @@ Thumbs.db
 # Ignore these
 
 __pycache__/
+key_store.txt
+test_functions.py
+test.py
