@@ -13,13 +13,9 @@ Linux:
 
         ~/$PATH/bsv-x509
 
-<<<<<<< HEAD
-    2) To execute the certificate viewer run the main.py file 
-=======
     2)  Verify SHA512 fingerprint of the root data file
         
         ~/$PATH/bsv-x509 sha512sum root_data.py
->>>>>>> dev
 
         The return value should equal --> 61438e7699f236b229aa197175e306e55c9a369d4b7ff321ec4ad0eb91885ddd2165f5548324dfbc9e9f69fd4d3e4c19c315038bad16a621df359637457a081e  root_data.py
 
